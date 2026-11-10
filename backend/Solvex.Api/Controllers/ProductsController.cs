@@ -34,4 +34,9 @@ public sealed class ProductsController(ProductService service) : ControllerBase
     [ProducesResponseType(204)]
     [ProducesResponseType(404)]
     public async Task<IActionResult> Deactivate(int id, CancellationToken ct) { await service.DeactivateAsync(id, ct); return NoContent(); }
+    /// <summary>Reactiva un producto conservando sus datos, existencias e historial.</summary>
+    [HttpPatch("{id:int}/activate")]
+    [ProducesResponseType(204)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> Activate(int id, CancellationToken ct) { await service.ActivateAsync(id, ct); return NoContent(); }
 }

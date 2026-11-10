@@ -37,6 +37,12 @@ public sealed class ProductService(IProductRepository repository)
         product.IsActive = false;
         await repository.SaveAsync(ct);
     }
+    public async Task ActivateAsync(int id, CancellationToken ct = default)
+    {
+        var product = await RequiredAsync(id, ct);
+        product.IsActive = true;
+        await repository.SaveAsync(ct);
+    }
     private async Task<Product> RequiredAsync(int id, CancellationToken ct) => await repository.FindAsync(id, ct) ?? throw new ProductNotFoundException();
     private async Task CheckCodeAsync(string code, int? id, CancellationToken ct)
     {
