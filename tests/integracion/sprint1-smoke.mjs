@@ -1,0 +1,72 @@
+// Solo desarrollo: crea dos productos nuevos y conserva sus movimientos. No elimina datos.
+import assert from 'node:assert/strict';
+const base = process.env.SOLVEX_TEST_API_URL?.replace(/\/$/, '');
+if (!base) throw new Error('Define SOLVEX_TEST_API_URL apuntando a una API de desarrollo.');
+async function send(path, method = 'GET', body, expected = 200) {
+  const response = await fetch(`${base}${path}`, { method, headers: { 'Content-Type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body) });
+  const text = await response.text();
+  assert.equal(response.status, expected, `${method} ${path}: ${response.status} ${text}`);
+  return { response, data: text ? JSON.parse(text) : undefined };
+}
+const suffix = Date.now();
+const first = (await send('/products', 'POST', { code: `S1-A-${suffix}`, name: 'Prueba inventario Sprint 1', price: 10 }, 201)).data;
+const second = (await send('/products', 'POST', { code: `S1-B-${suffix}`, name: 'Prueba disponibilidad Sprint 1', price: 2 }, 201)).data;
+const path = `/inventory/${first.id}`;
+const move = (type, quantity, reason = 'Prueba Sprint 1') => send(`${path}/movements`, 'POST', { type, quantity, reason }, 201);
+assert.equal((await send(path)).data.stock, 0);
+const entry = await move('Entry', 10, ' Compra recibida ');
+assert.equal(entry.data.currentStock, 10);
+assert.equal(entry.data.movement.reason, 'Compra recibida');
+assert.equal((await send(entry.response.headers.get('location').replace(base, ''))).data.id, entry.data.movement.id);
+assert.equal(new Date(entry.data.movement.registeredAt).getTime() > 0, true);
+await send(`${path}/movements`, 'POST', { type: 'Entry', quantity: 0, reason: 'Motivo' }, 400);
+await send(`${path}/movements`, 'POST', { type: 'Exit', quantity: -1, reason: 'Motivo' }, 400);
+await send(`${path}/movements`, 'POST', { type: 'Unknown', quantity: 1, reason: 'Motivo' }, 400);
+await send(`${path}/movements`, 'POST', { type: 'Entry', quantity: 1, reason: '   ' }, 400);
+await send(`${path}/movements`, 'POST', { type: 'Exit', quantity: 11, reason: 'Salida excesiva' }, 409);
+assert.equal((await send(path)).data.stock, 10);
+assert.equal((await send(`${path}/movements`)).data.length, 1);
+const checkInput = { items: [{ productId: first.id, quantity: 10 }, { productId: second.id, quantity: 3 }] };
+const beforeHistory = (await send(`${path}/movements`)).data;
+const availability = (await send('/availability', 'POST', checkInput)).data;
+assert.equal(availability.allAvailable, false);
+assert.equal(availability.items[0].isSufficient, true);
+assert.equal(availability.items[0].missingQuantity, 0);
+assert.equal(availability.items[1].availableQuantity, 0);
+assert.equal(availability.items[1].missingQuantity, 3);
+assert.equal((await send(path)).data.stock, 10);
+assert.deepEqual((await send(`${path}/movements`)).data, beforeHistory);
+await send('/availability', 'POST', { items: [] }, 400);
+await send('/availability', 'POST', { items: [{ productId: first.id, quantity: 0 }] }, 400);
+await send('/availability', 'POST', { items: [{ productId: first.id, quantity: 1 }, { productId: first.id, quantity: 1 }] }, 400);
+await send('/availability', 'POST', { items: [{ productId: 2147483647, quantity: 1 }] }, 404);
+// Dos salidas de 7 sobre un saldo de 10: exactamente una debe guardar.
+const exits = await Promise.all([1, 2].map(() => fetch(`${base}${path}/movements`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'Exit', quantity: 7, reason: 'Prueba concurrente' }) })));
+assert.deepEqual(exits.map(r => r.status).sort(), [201, 409]);
+await Promise.all(exits.map(r => r.text()));
+assert.equal((await send(path)).data.stock, 3);
+const history = (await send(`${path}/movements`)).data;
+assert.equal(history.length, 2);
+assert.equal(history.reduce((saldo, m) => saldo + (m.type === 'Entry' ? m.quantity : -m.quantity), 0), 3);
+// Entradas concurrentes: no se pierden actualizaciones.
+await Promise.all(Array.from({ length: 5 }, () => move('Entry', 1, 'Entrada concurrente')));
+assert.equal((await send(path)).data.stock, 8);
+const enough = (await send('/availability', 'POST', { items: [{ productId: first.id, quantity: 8 }] })).data;
+assert.equal(enough.allAvailable, true);
+await send(`/products/${first.id}`, 'PUT', { code: first.code, name: first.name, price: 11 });
+assert.equal((await send(path)).data.stock, 8, 'Editar producto no modifica stock');
+await send(`/products/${first.id}/deactivate`, 'PATCH', undefined, 204);
+await send(`${path}/movements`, 'POST', { type: 'Entry', quantity: 1, reason: 'Inactivo' }, 409);
+const inactive = (await send('/availability', 'POST', { items: [{ productId: first.id, quantity: 1 }] })).data;
+assert.equal(inactive.items[0].isSufficient, false);
+assert.equal((await send(path)).data.stock, 8);
+await send('/inventory/2147483647', 'GET', undefined, 404);
+await send('/inventory/movements/9223372036854775807', 'GET', undefined, 404);
+// Desbordamiento también debe rechazarse sin dejar un movimiento parcial.
+await send(`/inventory/${second.id}/movements`, 'POST', { type: 'Entry', quantity: 2147483647, reason: 'Límite de existencias' }, 201);
+await send(`/inventory/${second.id}/movements`, 'POST', { type: 'Entry', quantity: 1, reason: 'No debe guardar' }, 409);
+assert.equal((await send(`/inventory/${second.id}`)).data.stock, 2147483647);
+assert.equal((await send(`/inventory/${second.id}/movements`)).data.length, 1);
+await send(`/inventory/${second.id}/movements`, 'POST', { type: 'Exit', quantity: 2147483647, reason: 'Retiro del saldo de prueba de límite' }, 201);
+await send(`/inventory/${second.id}/movements`, 'POST', { type: 'Entry', quantity: 3, reason: 'Saldo de demostración' }, 201);
+console.log(`Sprint 1 OK: entrada/salida, validación, concurrencia SQL, historial y saldo coherentes, disponibilidad sin cambios, inactivos, 404 y límite numérico. Productos de prueba: ${first.id}, ${second.id}.`);

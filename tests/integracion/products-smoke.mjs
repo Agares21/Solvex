@@ -1,0 +1,61 @@
+// Ejecutar solamente contra una base de desarrollo: deja un producto de prueba inactivo.
+import assert from 'node:assert/strict';
+const base = process.env.SOLVEX_TEST_API_URL;
+if (!base) throw new Error('Define SOLVEX_TEST_API_URL, por ejemplo http://localhost:5080/api');
+const origin = process.env.SOLVEX_TEST_ORIGIN ?? 'http://localhost:5173';
+const url = base.replace(/\/$/, '');
+const input = { code: `TEST-${Date.now()}`, name: 'Cuaderno de prueba HU-01', description: 'Prueba de integración SCRUM-11', price: 12.5 };
+const send = (path, method = 'GET', body) => fetch(`${url}${path}`, { method, headers: { 'Content-Type': 'application/json', Origin: origin }, body: body === undefined ? undefined : JSON.stringify(body) });
+let response = await send('/products');
+assert.equal(response.status, 200);
+assert.equal(response.headers.get('access-control-allow-origin'), origin);
+assert.ok(Array.isArray(await response.json()));
+response = await fetch(`${url}/products`, { method: 'OPTIONS', headers: { Origin: origin, 'Access-Control-Request-Method': 'POST', 'Access-Control-Request-Headers': 'content-type' } });
+assert.equal(response.status, 204);
+assert.equal(response.headers.get('access-control-allow-origin'), origin);
+assert.ok(response.headers.get('access-control-allow-methods')?.includes('POST'));
+response = await send('/products', 'POST', { ...input, name: '   ' });
+assert.equal(response.status, 400);
+response = await send('/products', 'POST', { ...input, price: null });
+assert.equal(response.status, 400);
+response = await send('/products', 'POST', { ...input, price: 1.001 });
+assert.equal(response.status, 400);
+response = await send('/products', 'POST', input);
+assert.equal(response.status, 201);
+const created = await response.json();
+assert.ok(response.headers.get('location')?.endsWith(`/api/products/${created.id}`));
+assert.equal(created.isActive, true);
+response = await send('/products', 'POST', { ...input, code: input.code.toLowerCase() });
+assert.equal(response.status, 409);
+response = await send(`/products/${created.id}`);
+assert.equal(response.status, 200);
+assert.equal((await response.json()).price, 12.5);
+response = await send(`/products/${created.id}`, 'PUT', { ...input, name: 'Cuaderno actualizado HU-01', price: 15 });
+assert.equal(response.status, 200);
+assert.equal((await response.json()).price, 15);
+for (let i = 0; i < 2; i++) {
+  response = await send(`/products/${created.id}/deactivate`, 'PATCH');
+  assert.equal(response.status, 204);
+}
+response = await send(`/products/${created.id}`);
+const inactive = await response.json();
+assert.equal(inactive.isActive, false);
+assert.equal(inactive.name, 'Cuaderno actualizado HU-01');
+response = await send('/products');
+assert.ok((await response.json()).some(p => p.id === created.id && p.isActive === false));
+response = await send('/products/2147483647');
+assert.equal(response.status, 404);
+const stockBefore = await (await send(`/inventory/${created.id}`)).json();
+const historyBefore = await (await send(`/inventory/${created.id}/movements`)).json();
+for (let i = 0; i < 2; i++) {
+  response = await send(`/products/${created.id}/activate`, 'PATCH');
+  assert.equal(response.status, 204);
+}
+assert.equal((await (await send(`/products/${created.id}`)).json()).isActive, true);
+assert.equal((await (await send(`/inventory/${created.id}`)).json()).stock, stockBefore.stock);
+assert.deepEqual(await (await send(`/inventory/${created.id}/movements`)).json(), historyBefore);
+response = await send('/products/2147483647/activate', 'PATCH');
+assert.equal(response.status, 404);
+response = await send(`/products/${created.id}/deactivate`, 'PATCH');
+assert.equal(response.status, 204);
+console.log(`Integración HTTP correcta: catálogo, validación, registro, duplicados, detalle, edición, desactivación idempotente y 404. Producto ${created.id} conservado inactivo.`);
