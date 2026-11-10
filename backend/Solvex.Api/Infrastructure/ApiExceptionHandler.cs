@@ -13,6 +13,10 @@ public sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) : I
         var status = error switch
         {
             ProductNotFoundException => 404,
+            SupplierNotFoundException => 404,
+            PurchaseNotFoundException => 404,
+            DuplicateSupplierIdentifierException => 409,
+            PurchaseConflictException => 409,
             MovementNotFoundException => 404,
             InventoryConflictException => 409,
             ValidationException => 400,
@@ -22,7 +26,7 @@ public sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) : I
         };
         if (status == 500) logger.LogError(error, "Error procesando {Path}", context.Request.Path);
         var message = status == 500 ? "No se pudo completar la operación. Inténtalo nuevamente."
-            : error is DbUpdateException && status == 409 ? "Ya existe un producto con ese código." : error.Message;
+            : error is DbUpdateException && status == 409 ? "El registro entra en conflicto con un identificador o recepción existente." : error.Message;
         await Results.Problem(statusCode: status, title: message, extensions: new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }).ExecuteAsync(context);
         return true;
     }

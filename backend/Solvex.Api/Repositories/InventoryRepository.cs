@@ -14,7 +14,12 @@ public interface IInventoryRepository
     Task<AdjustmentDto> AdjustAsync(int productId, MovementType type, int quantity, string reason, CancellationToken ct);
 }
 
-public sealed class InventoryRepository(SolvexDbContext db) : IInventoryRepository
+public interface IPurchaseInventory
+{
+    Task ReceiveAsync(int productId, int quantity, int purchaseDetailId, string reason, CancellationToken ct);
+}
+
+public sealed class InventoryRepository(SolvexDbContext db) : IInventoryRepository, IPurchaseInventory
 {
     public Task<List<StockDto>> GetStockAsync(int[]? ids, CancellationToken ct)
     {
@@ -29,9 +34,16 @@ public sealed class InventoryRepository(SolvexDbContext db) : IInventoryReposito
     public Task<InventoryMovement?> FindMovementAsync(long id, CancellationToken ct) =>
         db.InventoryMovements.AsNoTracking().SingleOrDefaultAsync(m => m.Id == id, ct);
 
-    public async Task<AdjustmentDto> AdjustAsync(int productId, MovementType type, int quantity, string reason, CancellationToken ct)
+    public Task<AdjustmentDto> AdjustAsync(int productId, MovementType type, int quantity, string reason, CancellationToken ct) =>
+        AdjustCoreAsync(productId, type, quantity, reason, null, ct);
+
+    public async Task ReceiveAsync(int productId, int quantity, int purchaseDetailId, string reason, CancellationToken ct) =>
+        await AdjustCoreAsync(productId, MovementType.Entry, quantity, reason, purchaseDetailId, ct);
+
+    private async Task<AdjustmentDto> AdjustCoreAsync(int productId, MovementType type, int quantity, string reason, int? purchaseDetailId, CancellationToken ct)
     {
-        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+        // La recepción comparte la transacción de la compra; los ajustes manuales crean la propia.
+        await using var transaction = db.Database.CurrentTransaction is null ? await db.Database.BeginTransactionAsync(ct) : null;
         // La condición y la suma se ejecutan en una sola sentencia UPDATE, bajo bloqueo SQL.
         // Nunca se calcula un saldo a partir de una lectura previa en memoria.
         var delta = type == MovementType.Entry ? quantity : -quantity;
@@ -46,11 +58,11 @@ public sealed class InventoryRepository(SolvexDbContext db) : IInventoryReposito
             throw new InventoryConflictException(!product.IsActive ? "No se permiten movimientos sobre productos inactivos."
                 : delta < 0 ? "Stock insuficiente para registrar la salida." : "La entrada supera el límite de existencias permitido.");
         }
-        var movement = new InventoryMovement { ProductId = productId, Type = type, Quantity = quantity, Reason = reason, RegisteredAt = DateTimeOffset.UtcNow };
+        var movement = new InventoryMovement { ProductId = productId, Type = type, Quantity = quantity, Reason = reason, RegisteredAt = DateTimeOffset.UtcNow, PurchaseDetailId = purchaseDetailId };
         db.InventoryMovements.Add(movement);
         await db.SaveChangesAsync(ct);
         var stock = await db.Products.Where(p => p.Id == productId).Select(p => p.Stock).SingleAsync(ct);
-        await transaction.CommitAsync(ct);
+        if (transaction is not null) await transaction.CommitAsync(ct);
         return new(new MovementDto(movement.Id, movement.ProductId, movement.Type, movement.Quantity, movement.Reason, movement.RegisteredAt), stock);
     }
 }

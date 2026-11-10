@@ -33,6 +33,9 @@ namespace Solvex.Api.Data.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("PurchaseDetailId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -50,6 +53,10 @@ namespace Solvex.Api.Data.Migrations
                         .HasColumnType("nvarchar(10)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PurchaseDetailId")
+                        .IsUnique()
+                        .HasFilter("[PurchaseDetailId] IS NOT NULL");
 
                     b.HasIndex("ProductId", "RegisteredAt", "Id");
 
@@ -108,6 +115,128 @@ namespace Solvex.Api.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Solvex.Api.Entities.Purchase", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset?>("ReceivedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("RegisteredAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("SupplierId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SupplierId");
+
+                    b.ToTable("Purchases", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Purchases_Status", "([Status] = 'Pending' AND [ReceivedAt] IS NULL) OR ([Status] = 'Received' AND [ReceivedAt] IS NOT NULL)");
+
+                            t.HasCheckConstraint("CK_Purchases_Total", "[Total] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Solvex.Api.Entities.PurchaseDetail", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PurchaseId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("PurchaseId", "ProductId")
+                        .IsUnique();
+
+                    b.ToTable("PurchaseDetails", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_PurchaseDetails_Quantity", "[Quantity] BETWEEN 1 AND 1000000");
+
+                            t.HasCheckConstraint("CK_PurchaseDetails_Subtotal", "[Subtotal] = [Quantity] * [UnitCost]");
+
+                            t.HasCheckConstraint("CK_PurchaseDetails_UnitCost", "[UnitCost] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Solvex.Api.Entities.Supplier", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("ContactName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(254)
+                        .HasColumnType("nvarchar(254)");
+
+                    b.Property<string>("Identifier")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Identifier")
+                        .IsUnique();
+
+                    b.ToTable("Suppliers", (string)null);
+                });
+
             modelBuilder.Entity("Solvex.Api.Entities.InventoryMovement", b =>
                 {
                     b.HasOne("Solvex.Api.Entities.Product", "Product")
@@ -116,7 +245,49 @@ namespace Solvex.Api.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Solvex.Api.Entities.PurchaseDetail", "PurchaseDetail")
+                        .WithMany()
+                        .HasForeignKey("PurchaseDetailId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Product");
+
+                    b.Navigation("PurchaseDetail");
+                });
+
+            modelBuilder.Entity("Solvex.Api.Entities.Purchase", b =>
+                {
+                    b.HasOne("Solvex.Api.Entities.Supplier", "Supplier")
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Supplier");
+                });
+
+            modelBuilder.Entity("Solvex.Api.Entities.PurchaseDetail", b =>
+                {
+                    b.HasOne("Solvex.Api.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Solvex.Api.Entities.Purchase", "Purchase")
+                        .WithMany("Details")
+                        .HasForeignKey("PurchaseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Purchase");
+                });
+
+            modelBuilder.Entity("Solvex.Api.Entities.Purchase", b =>
+                {
+                    b.Navigation("Details");
                 });
 #pragma warning restore 612, 618
         }

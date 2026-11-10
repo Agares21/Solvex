@@ -11,4 +11,6 @@ public sealed class InventoryMovement
     public int Quantity { get; set; }
     public string Reason { get; set; } = "";
     public DateTimeOffset RegisteredAt { get; set; }
+    public int? PurchaseDetailId { get; set; }
+    public PurchaseDetail? PurchaseDetail { get; set; }
 }
