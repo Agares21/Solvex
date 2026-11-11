@@ -1,5 +1,27 @@
 # SOLVEX — Gestión de librería
 
+## Aplicación integrada — Sprint 2
+
+La rama `integration/sprint2` combina el backend de `feature/sprint2-backend` y el frontend de `Tpg_front`. Hay una sola aplicación web ejecutable en `frontend/`, con Productos, Inventario, Disponibilidad, Proveedores y Compras conectados a la API. Los formularios y estilos de Diana se integraron en `frontend/src/features/sprint2/`; no se usan catálogos simulados.
+
+Desde la raíz, primera instalación del frontend:
+
+```powershell
+npm.cmd ci
+npm.cmd run setup
+# Solo si todavía no existe frontend/.env ni frontend/.env.local:
+Copy-Item frontend/.env.example frontend/.env
+npm.cmd run dev
+```
+
+Si ya tienes configurado `.env.local`, conservarlo y omitir Copy-Item. `VITE_API_BASE_URL` debe apuntar a `http://localhost:5080/api`. Abrir `http://localhost:5173`; la API debe iniciarse en otra terminal con las [instrucciones del backend](backend/README.md). La base existente no se recrea. `npm.cmd run build` y `npm.cmd test` desde la raíz delegan a frontend. No es necesario instalar las dependencias del prototipo raíz de Diana: package.json raíz solo ofrece estos accesos a la aplicación unificada.
+
+Para verificar la integración: registrar un proveedor, registrar una compra con productos activos, consultar su detalle, recibirla y comprobar el incremento en Inventario. La recepción se realiza una sola vez. No se permiten fechas/estados arbitrarios ni productos escritos a mano porque la API usa IDs reales y asigna el estado Pending al registrar.
+
+Verificación y decisiones: [informe de integración Sprint 2](docs/integration-sprint2.md). Para ejecutar el recorrido de formularios React contra API real, con backend iniciado y una base de desarrollo migrada: `npm.cmd run test:api`. Crea datos de prueba propios y los conserva. La prueba usa DOM simulado y HTTP/SQL reales; la revisión visual en navegador es independiente.
+
+## Documentación de entregas anteriores
+
 **Sprint 2 backend:** proveedores y compras con recepción transaccional. Consulta el [README del backend](backend/README.md), el [contrato de integración para Diana](docs/api/sprint2-contract.md) y el [informe de resultados y trazabilidad](docs/sprint2-backend.md). El frontend del Sprint 2 se desarrolla de forma independiente; esta ampliación no lo modifica. La documentación del Sprint 1 que sigue se conserva como referencia de su entrega.
 
 Sprint 1: **RF-01 / HU-01 / SCRUM-11**, **RF-02 / HU-02 / SCRUM-12** y **RF-06 / HU-06 / SCRUM-13**, épica SCRUM-5. Productos, ajustes de inventario y consulta de disponibilidad. React → API REST ASP.NET Core 8 → SQL Server. No incluye Flutter, Redis, JWT/RBAC ni PWA.

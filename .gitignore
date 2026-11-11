@@ -9,3 +9,12 @@ tmp/
 .vs/
 *.user
 *.tsbuildinfo
+logs/
+*.log
+**/dist-ssr/
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sw?
