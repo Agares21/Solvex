@@ -420,3 +420,173 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* FORMULARIO DE REGISTRO DE COMPRAS */
+
+.compra-form-modal {
+  max-width: 850px;
+}
+
+.compra-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 25px;
+}
+
+.compra-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.compra-field label {
+  color: #243b5a;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.compra-field input,
+.compra-field select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #e9e4da;
+  border-radius: 7px;
+  background: #fffdf9;
+  color: #333;
+  font-size: 12px;
+  outline: none;
+}
+
+.compra-field input:focus,
+.compra-field select:focus {
+  border-color: #315b91;
+  box-shadow: 0 0 0 2px rgba(49, 91, 145, 0.08);
+}
+
+.compra-field small {
+  color: #d94b43;
+  font-size: 11px;
+}
+
+.compra-form-products-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 25px 0 15px;
+}
+
+.compra-form-products-header h3 {
+  color: #243b5a;
+  font-family: Georgia, serif;
+  font-size: 17px;
+  margin: 0 0 6px;
+}
+
+.compra-form-products-header p {
+  color: #999;
+  font-size: 11px;
+  margin: 0;
+}
+
+.compra-add-product {
+  background: #e9f0fa;
+  color: #315b91;
+  border: none;
+  padding: 10px 13px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.compra-add-product:hover {
+  background: #dce8f8;
+}
+
+.compra-form-products {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.compra-product-row {
+  display: grid;
+  grid-template-columns: 2fr 0.8fr 1.2fr 32px;
+  gap: 10px;
+  align-items: end;
+  padding: 14px;
+  border: 1px solid #eee8dd;
+  border-radius: 9px;
+  background: #fffdf9;
+}
+
+.compra-remove-product {
+  height: 38px;
+  width: 32px;
+  border: none;
+  border-radius: 7px;
+  background: #fff0ed;
+  color: #d94b43;
+  font-size: 21px;
+  cursor: pointer;
+}
+
+.compra-remove-product:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.compra-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.compra-cancel-button {
+  background: #f2f2f2;
+  color: #555;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 7px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.compra-form-actions .compra-modal-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 650px) {
+  .compra-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .compra-product-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .producto-nombre {
+    grid-column: 1 / -1;
+  }
+
+  .compra-form-products-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .compra-form-actions {
+    flex-direction: column;
+  }
+
+  .compra-form-actions button {
+    width: 100%;
+  }
+}

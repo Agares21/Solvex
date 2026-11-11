@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import CompraForm from "./CompraForm";
 import "./Compras.css";
 
 const comprasIniciales = [
@@ -36,17 +37,39 @@ const comprasIniciales = [
 
 function calcularTotal(productos) {
   return productos.reduce(
-    (total, producto) => total + producto.cantidad * producto.costo,
+    (total, producto) =>
+      total + producto.cantidad * producto.costo,
     0
   );
 }
 
 function Compras({ suppliers = [] }) {
-  const [compras] = useState(comprasIniciales);
+  const [compras, setCompras] = useState(comprasIniciales);
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("Todas");
   const [compraSeleccionada, setCompraSeleccionada] = useState(null);
 
+  // Registrar una nueva compra
+  const registrarCompra = (nuevaCompra) => {
+    const siguienteNumero =
+      Math.max(
+        0,
+        ...compras.map(
+          (compra) => Number(compra.id.split("-")[1]) || 0
+        )
+      ) + 1;
+
+    const compra = {
+      id: `COMP-${String(siguienteNumero).padStart(3, "0")}`,
+      ...nuevaCompra,
+    };
+
+    setCompras((prev) => [...prev, compra]);
+    setMostrarFormulario(false);
+  };
+
+  // Filtrar compras
   const comprasFiltradas = compras.filter((compra) => {
     const coincideBusqueda =
       `${compra.id} ${compra.proveedor}`
@@ -54,20 +77,26 @@ function Compras({ suppliers = [] }) {
         .includes(busqueda.toLowerCase());
 
     const coincideEstado =
-      filtroEstado === "Todas" || compra.estado === filtroEstado;
+      filtroEstado === "Todas" ||
+      compra.estado === filtroEstado;
 
     return coincideBusqueda && coincideEstado;
   });
 
+  // Estadísticas
   const gastoTotal = compras.reduce(
-    (total, compra) => total + calcularTotal(compra.productos),
+    (total, compra) =>
+      total + calcularTotal(compra.productos),
     0
   );
 
   const totalProductos = compras.reduce(
     (total, compra) =>
       total +
-      compra.productos.reduce((suma, producto) => suma + producto.cantidad, 0),
+      compra.productos.reduce(
+        (suma, producto) => suma + producto.cantidad,
+        0
+      ),
     0
   );
 
@@ -84,19 +113,28 @@ function Compras({ suppliers = [] }) {
 
   return (
     <div className="compras-page">
+
+      {/* BIENVENIDA */}
       <section className="compras-welcome">
         <div>
-          <span className="compras-eyebrow">ABASTECIMIENTO</span>
+          <span className="compras-eyebrow">
+            ABASTECIMIENTO
+          </span>
+
           <h2>Control de compras</h2>
+
           <p>
             Consulta las compras realizadas y mantén organizado
             el historial de abastecimiento de tu librería.
           </p>
         </div>
+
         <div className="compras-decoration">🛒</div>
       </section>
 
+      {/* ESTADÍSTICAS */}
       <section className="compras-stats">
+
         <article className="compra-stat-card">
           <div className="compra-stat-icon amarillo">🧾</div>
           <div>
@@ -123,22 +161,34 @@ function Compras({ suppliers = [] }) {
             <small>Productos comprados</small>
           </div>
         </article>
+
       </section>
 
+      {/* HISTORIAL */}
       <section className="compras-panel">
+
         <div className="compras-panel-header">
           <div>
             <h2>Historial de compras</h2>
-            <p>Consulta las operaciones de abastecimiento realizadas.</p>
+            <p>
+              Consulta las operaciones de abastecimiento realizadas.
+            </p>
           </div>
-          <span className="compras-counter">
-            {comprasFiltradas.length} registros
-          </span>
+
+          <button
+            className="compra-modal-button"
+            onClick={() => setMostrarFormulario(true)}
+          >
+            + Nueva compra
+          </button>
         </div>
 
+        {/* BUSCADOR Y FILTROS */}
         <div className="compras-tools">
+
           <div className="compras-search">
             <span>🔍</span>
+
             <input
               type="text"
               placeholder="Buscar por código o proveedor..."
@@ -156,10 +206,14 @@ function Compras({ suppliers = [] }) {
             <option value="Recibida">Recibidas</option>
             <option value="Pendiente">Pendientes</option>
           </select>
+
         </div>
 
+        {/* TABLA */}
         <div className="compras-table-wrap">
+
           <table className="compras-table">
+
             <thead>
               <tr>
                 <th>CÓDIGO</th>
@@ -173,17 +227,28 @@ function Compras({ suppliers = [] }) {
             </thead>
 
             <tbody>
+
               {comprasFiltradas.map((compra) => (
                 <tr key={compra.id}>
+
                   <td>
-                    <span className="compra-code">{compra.id}</span>
+                    <span className="compra-code">
+                      {compra.id}
+                    </span>
                   </td>
-                  <td><strong>{compra.proveedor}</strong></td>
+
+                  <td>
+                    <strong>{compra.proveedor}</strong>
+                  </td>
+
                   <td>{formatoFecha(compra.fecha)}</td>
+
                   <td>{compra.productos.length} tipos</td>
+
                   <td className="compra-total">
                     {formatoBs(calcularTotal(compra.productos))}
                   </td>
+
                   <td>
                     <span
                       className={`compra-status ${
@@ -195,6 +260,7 @@ function Compras({ suppliers = [] }) {
                       {compra.estado}
                     </span>
                   </td>
+
                   <td>
                     <button
                       className="compra-detail-button"
@@ -203,35 +269,58 @@ function Compras({ suppliers = [] }) {
                       Ver detalle →
                     </button>
                   </td>
+
                 </tr>
               ))}
+
             </tbody>
+
           </table>
 
           {comprasFiltradas.length === 0 && (
             <div className="compras-empty">
               <span>📭</span>
               <h3>No se encontraron compras</h3>
-              <p>Prueba con otro código, proveedor o estado.</p>
+              <p>
+                Prueba con otro código, proveedor o estado.
+              </p>
             </div>
           )}
+
         </div>
+
       </section>
 
+      {/* FORMULARIO DE REGISTRO */}
+      {mostrarFormulario && (
+        <CompraForm
+          suppliers={suppliers}
+          onGuardar={registrarCompra}
+          onCancelar={() => setMostrarFormulario(false)}
+        />
+      )}
+
+      {/* MODAL DE DETALLES */}
       {compraSeleccionada && (
         <div
           className="compra-detail-overlay"
           onClick={() => setCompraSeleccionada(null)}
         >
+
           <div
             className="compra-detail-modal"
             onClick={(e) => e.stopPropagation()}
           >
+
             <div className="compra-detail-header">
               <div>
-                <span className="compras-eyebrow">INFORMACIÓN DE COMPRA</span>
+                <span className="compras-eyebrow">
+                  INFORMACIÓN DE COMPRA
+                </span>
+
                 <h2>{compraSeleccionada.id}</h2>
               </div>
+
               <button
                 className="compra-close"
                 onClick={() => setCompraSeleccionada(null)}
@@ -241,24 +330,34 @@ function Compras({ suppliers = [] }) {
             </div>
 
             <div className="compra-detail-info">
+
               <div>
                 <span>Proveedor</span>
                 <strong>{compraSeleccionada.proveedor}</strong>
               </div>
+
               <div>
                 <span>Fecha de compra</span>
-                <strong>{formatoFecha(compraSeleccionada.fecha)}</strong>
+                <strong>
+                  {formatoFecha(compraSeleccionada.fecha)}
+                </strong>
               </div>
+
               <div>
                 <span>Estado</span>
                 <strong>{compraSeleccionada.estado}</strong>
               </div>
+
             </div>
 
-            <h3 className="compra-products-title">Productos adquiridos</h3>
+            <h3 className="compra-products-title">
+              Productos adquiridos
+            </h3>
 
             <div className="compras-table-wrap">
+
               <table className="compras-table">
+
                 <thead>
                   <tr>
                     <th>PRODUCTO</th>
@@ -267,25 +366,38 @@ function Compras({ suppliers = [] }) {
                     <th>SUBTOTAL</th>
                   </tr>
                 </thead>
+
                 <tbody>
-                  {compraSeleccionada.productos.map((producto, index) => (
-                    <tr key={index}>
-                      <td>{producto.nombre}</td>
-                      <td>{producto.cantidad}</td>
-                      <td>{formatoBs(producto.costo)}</td>
-                      <td className="compra-total">
-                        {formatoBs(producto.cantidad * producto.costo)}
-                      </td>
-                    </tr>
-                  ))}
+
+                  {compraSeleccionada.productos.map(
+                    (producto, index) => (
+                      <tr key={index}>
+                        <td>{producto.nombre}</td>
+                        <td>{producto.cantidad}</td>
+                        <td>{formatoBs(producto.costo)}</td>
+
+                        <td className="compra-total">
+                          {formatoBs(
+                            producto.cantidad * producto.costo
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  )}
+
                 </tbody>
+
               </table>
+
             </div>
 
             <div className="compra-grand-total">
               <span>Total de la compra</span>
+
               <strong>
-                {formatoBs(calcularTotal(compraSeleccionada.productos))}
+                {formatoBs(
+                  calcularTotal(compraSeleccionada.productos)
+                )}
               </strong>
             </div>
 
@@ -295,9 +407,12 @@ function Compras({ suppliers = [] }) {
             >
               Cerrar detalle
             </button>
+
           </div>
+
         </div>
       )}
+
     </div>
   );
 }
