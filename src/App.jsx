@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import SupplierModal from "./components/SupplierModal";
+import ProveedorForm from "./components/proveedores/ProveedorForm";
 import "./App.css";
 
 const initialSuppliers = [
@@ -45,18 +46,25 @@ function App() {
       .includes(search.toLowerCase())
   );
 
-  const handleSave = (newSupplier) => {
-    const supplier = {
-      ...newSupplier,
-      id: `PROV-${String(suppliers.length + 1).padStart(3, "0")}`,
-    };
-
-    setSuppliers((prev) => [...prev, supplier]);
-    setModal(null);
-    setMessage("¡Proveedor registrado correctamente!");
-
-    setTimeout(() => setMessage(""), 3000);
+const handleSave = (newSupplier) => {
+  const supplier = {
+    id: `PROV-${String(suppliers.length + 1).padStart(3, "0")}`,
+    name: newSupplier.nombre,
+    nit: newSupplier.nit,
+    contact: newSupplier.contacto,
+    phone: newSupplier.telefono,
+    email: newSupplier.correo,
+    address: newSupplier.direccion,
+    observations: newSupplier.observaciones,
+    category: "Sin categoría",
   };
+
+  setSuppliers((prev) => [...prev, supplier]);
+  setModal(null);
+  setMessage("¡Proveedor registrado correctamente!");
+
+  setTimeout(() => setMessage(""), 3000);
+};
 
   return (
     <div className="app-container">
@@ -242,7 +250,14 @@ function App() {
         </footer>
       </main>
 
-      {modal && (
+{modal?.mode === "create" && (
+  <ProveedorForm
+    onGuardar={handleSave}
+    onCancelar={() => setModal(null)}
+  />
+)}
+
+      {modal?.mode === "view" && (
         <SupplierModal
           mode={modal.mode}
           supplier={modal.supplier}
