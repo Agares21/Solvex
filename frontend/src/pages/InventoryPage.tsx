@@ -21,7 +21,7 @@ export function InventoryPage() {
       .finally(() => { if (!controller.signal.aborted) setHistoryLoading(false); });
     return () => controller.abort();
   }, [selectedId, historyVersion]);
-  return <><div className="page-heading"><div><p className="eyebrow">CONTROL DE INVENTARIO</p><h1>Existencias claras.</h1><p className="muted">Registra entradas y salidas con su motivo y consulta el historial.</p></div><button className="secondary" disabled={loading || busy} onClick={refresh}>Actualizar existencias</button></div>
+  return <><div className="page-heading" data-icon="📦"><div><p className="eyebrow">CONTROL DE INVENTARIO</p><h1>Existencias claras.</h1><p className="muted">Registra entradas y salidas con su motivo y consulta el historial.</p></div><button className="secondary" disabled={loading || busy} onClick={refresh}>Actualizar existencias</button></div>
     <Feedback error={error} loading={loading} loadingMessage="Consultando existencias…"/>
     {error && <button onClick={refresh}>Reintentar</button>}
     {success && <p className="notice success" role="status">{success}</p>}

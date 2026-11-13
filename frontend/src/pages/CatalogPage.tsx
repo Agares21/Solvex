@@ -17,7 +17,7 @@ export function CatalogPage() {
     return () => controller.abort();
   }, [attempt]);
   const visible = items.filter(p => `${p.code} ${p.name}`.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
-  return <><div className="page-heading"><div><p className="eyebrow">GESTIÓN DE PRODUCTOS</p><h1>Tu catálogo, al día.</h1><p className="muted">Organiza los productos de tu librería en un solo lugar.</p></div><Link className="button" to="/products/new">+ Registrar producto</Link></div>
+  return <><div className="page-heading" data-icon="📚"><div><p className="eyebrow">GESTIÓN DE PRODUCTOS</p><h1>Tu catálogo, al día.</h1><p className="muted">Organiza los productos de tu librería en un solo lugar.</p></div><Link className="button" to="/products/new">+ Registrar producto</Link></div>
     {location.state?.message && <p className="notice success" role="status">{location.state.message}</p>}
     <div className="stats"><div className="panel"><span>Productos registrados</span><strong>{loading || error ? '—' : items.length}</strong></div><div className="panel"><span>Activos</span><strong>{loading || error ? '—' : items.filter(p => p.isActive).length}</strong></div><div className="panel"><span>Inactivos</span><strong>{loading || error ? '—' : items.filter(p => !p.isActive).length}</strong></div></div>
     <section className="panel catalog"><div className="catalog-heading"><h2>Catálogo de productos</h2><label className="search">Buscar por nombre o código<input type="search" placeholder="Buscar productos…" value={query} onChange={e => setQuery(e.target.value)}/></label></div>

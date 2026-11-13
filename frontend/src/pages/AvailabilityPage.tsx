@@ -11,7 +11,7 @@ export function AvailabilityPage() {
   const [nextKey, setNextKey] = useState(1); const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState(''); const [result, setResult] = useState<Availability>();
   const change = (key: number, patch: Partial<Row>) => { setRows(values => values.map(r => r.key === key ? { ...r, ...patch } : r)); setResult(undefined); setFormError(''); };
-  return <><div className="page-heading"><div><p className="eyebrow">DISPONIBILIDAD DE PRODUCTOS</p><h1>Comprueba antes de atender.</h1><p className="muted">Consulta uno o varios productos. Esta verificación no reserva ni descuenta existencias.</p></div></div>
+  return <><div className="page-heading" data-icon="🔎"><div><p className="eyebrow">DISPONIBILIDAD DE PRODUCTOS</p><h1>Comprueba antes de atender.</h1><p className="muted">Consulta uno o varios productos. Esta verificación no reserva ni descuenta existencias.</p></div></div>
     <Feedback error={error} loading={loading}/>{error && <button onClick={refresh}>Reintentar</button>}
     {!loading && !error && <form className="panel detail availability-form" onSubmit={async e => {
       e.preventDefault(); if (busy) return;

@@ -17,7 +17,7 @@ export function ProductPage({ mode }: { mode: 'create' | 'edit' | 'detail' }) {
     return () => controller.abort();
   }, [id, mode]);
   const title = mode === 'create' ? 'Registrar producto' : mode === 'edit' ? 'Editar producto' : 'Detalle del producto';
-  return <><Link className="back" to="/products">← Volver al catálogo</Link><div className="page-heading"><div><p className="eyebrow">CATÁLOGO / PRODUCTOS</p><h1>{title}</h1></div></div>
+  return <><Link className="back" to="/products">← Volver al catálogo</Link><div className="page-heading" data-icon="📖"><div><p className="eyebrow">CATÁLOGO / PRODUCTOS</p><h1>{title}</h1></div></div>
     <Feedback error={error} loading={loading}/>
     {mode === 'create' && <ProductForm onSave={async input => { await products.create(input); navigate('/products', { state: { message: 'Producto registrado correctamente.' } }); }}/>}
     {!loading && product && mode === 'edit' && <ProductForm key={product.id} initial={product} onSave={async input => { await products.update(product.id, input); navigate('/products', { state: { message: 'Producto actualizado correctamente.' } }); }}/>}
