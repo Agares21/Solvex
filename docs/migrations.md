@@ -7,8 +7,12 @@ Se utiliza el contexto existente `SolvexDbContext` y la misma cadena `Connection
 | 20261023134232_InitialProducts | Products, código único y precio no negativo |
 | 20261023145149_AddInventory | Stock inicial cero, InventoryMovements, restricciones y relación con productos |
 | 20261110121023_Sprint2SuppliersAndPurchases | Suppliers, Purchases y PurchaseDetails; referencia opcional PurchaseDetailId en movimientos existentes; índices y restricciones |
+| 20261113173508_UniqueProductNames | NormalizedName calculado persistido e índice único; exige resolver nombres duplicados antes de aplicar |
+| 20261124180808_Sprint3CustomersOrdersMockups | Clientes, pedidos, detalles, maquetas y pagos; no aplicada automáticamente |
 
 La migración del Sprint 2 es aditiva: no cambia precios, saldos ni detalles de productos anteriores. Todos los movimientos anteriores mantienen PurchaseDetailId null. El índice único filtrado aplica solo cuando esa referencia está informada. Las relaciones usan `Restrict`, sin eliminaciones en cascada.
+
+Actualización de nombres únicos: ver [regla, evidencia y preparación de datos](product-names.md). UniqueProductNames no elimina registros ni cambia inventario. Si existen duplicados, aborta para permitir revisarlos y ejecutar el script de mantenimiento antes de reintentar.
 
 Restricciones nuevas: identificador de proveedor único; una línea por producto/compra; cantidades 1–1000000; costos no negativos; subtotal igual a cantidad × costo; total no negativo; estado Pending con ReceivedAt null o Received con fecha no nula; máximo un movimiento de recepción por detalle. importes: UnitCost decimal(10,2), Subtotal/Total decimal(18,2). El servicio calcula totales y exige 1–100 detalles.
 
@@ -22,6 +26,6 @@ dotnet ef migrations script --idempotent --project backend/Solvex.Api --output t
 dotnet ef database update --project backend/Solvex.Api
 ```
 
-Verificar destino antes del último comando. No ejecutar Down ni borrar/recrear bases. Para una base del Sprint 1, EF aplica solo la nueva migración; para una instalación inicial aplica las tres. Los métodos Down generados se conservan como metadatos EF, pero no fueron ejecutados.
+Verificar destino antes del último comando. No ejecutar Down ni borrar/recrear bases. EF aplica únicamente las migraciones pendientes; para una instalación inicial aplica todas. Los métodos Down generados se conservan como metadatos EF, pero no fueron ejecutados.
 
 Evidencia del 10/11/2026 en `.\SQLEXPRESS`, `SolvexHu01Demo`: antes de aplicar Sprint 2 había 9 productos y 13 movimientos; inmediatamente después seguían siendo 9 y 13. Luego las pruebas añadieron sus propios registros. No se modificaron otras bases ni se eliminaron datos. La aplicación real y las pruebas SQL verificaron posteriormente los nuevos modelos y la recepción.

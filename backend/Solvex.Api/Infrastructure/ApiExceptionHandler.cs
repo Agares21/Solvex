@@ -21,11 +21,20 @@ public sealed class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) : I
             InventoryConflictException => 409,
             ValidationException => 400,
             DuplicateProductCodeException => 409,
+            DuplicateProductNameException => 409,
+            CustomerNotFoundException => 404,
+            OrderNotFoundException => 404,
+            MockupNotFoundException => 404,
+            PaymentConflictException => 409,
+            MockupStatusConflictException => 409,
             DbUpdateException { InnerException: SqlException { Number: 2601 or 2627 } } => 409,
             _ => 500
         };
         if (status == 500) logger.LogError(error, "Error procesando {Path}", context.Request.Path);
-        var message = status == 500 ? "No se pudo completar la operación. Inténtalo nuevamente."
+        var duplicateName = error is DbUpdateException { InnerException: SqlException { Number: 2601 or 2627 } sql }
+            && sql.Message.Contains("IX_Products_NormalizedName", StringComparison.Ordinal);
+        var message = duplicateName ? "Ya existe un producto con ese nombre."
+            : status == 500 ? "No se pudo completar la operación. Inténtalo nuevamente."
             : error is DbUpdateException && status == 409 ? "El registro entra en conflicto con un identificador o recepción existente." : error.Message;
         await Results.Problem(statusCode: status, title: message, extensions: new Dictionary<string, object?> { ["traceId"] = context.TraceIdentifier }).ExecuteAsync(context);
         return true;

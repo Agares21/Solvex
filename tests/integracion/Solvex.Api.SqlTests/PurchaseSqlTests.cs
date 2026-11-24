@@ -23,9 +23,9 @@ public sealed class PurchaseSqlTests
     {
         await using var db = Db();
         var key = Guid.NewGuid().ToString("N");
-        var supplier = new Supplier { Identifier = "SQL-" + key, Name = "Proveedor prueba SQL", Phone = "77777777" };
-        var first = new Product { Code = "SQL-A-" + key, Name = "Producto SQL A", Price = 1 };
-        var second = new Product { Code = "SQL-B-" + key, Name = "Producto SQL B", Price = 1 };
+        var supplier = new Supplier { Identifier = "SQL-" + key, Name = "Distribuidora Escolar " + key[..8], Phone = "77777777" };
+        var first = new Product { Code = "SQL-A-" + key, Name = "Cuaderno universitario " + key, Price = 1 };
+        var second = new Product { Code = "SQL-B-" + key, Name = "Bolígrafo azul " + key, Price = 1 };
         db.AddRange(supplier, first, second); await db.SaveChangesAsync();
         return (supplier.Id, first.Id, second.Id);
     }

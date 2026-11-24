@@ -1,5 +1,7 @@
 # SOLVEX — Gestión de librería
 
+**Nombres únicos de productos:** al registrar o editar, no se puede repetir un nombre, aunque cambien las mayúsculas o los espacios exteriores, incluso si el producto anterior está inactivo. Backend y SQL Server devuelven un conflicto que se muestra en el formulario. Para actualizar otra base, revisar la [migración y preparación de duplicados existentes](docs/product-names.md).
+
 ## Aplicación integrada — Sprint 2
 
 La rama `integration/sprint2` combina el backend de `feature/sprint2-backend` y el frontend de `Tpg_front`. Hay una sola aplicación web ejecutable en `frontend/`, con Productos, Inventario, Disponibilidad, Proveedores y Compras conectados a la API. Los formularios y estilos de Diana se integraron en `frontend/src/features/sprint2/`; no se usan catálogos simulados.

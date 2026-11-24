@@ -20,7 +20,7 @@ export function ProductForm({ initial, onSave }: { initial?: ProductInput; onSav
   }}>
     <Feedback error={error}/>
     <fieldset disabled={busy}><legend>Información del producto</legend>
-      <p className="muted">Los campos marcados con * son obligatorios.</p>
+      <p className="muted">Los campos marcados con * son obligatorios. El nombre debe ser único, también entre productos inactivos.</p>
       <div className="form-grid"><label>Código *<input required maxLength={40} value={code} onChange={e => setCode(e.target.value)} autoComplete="off"/></label>
       <label>Precio (Bs) *<input required type="number" min="0" max="99999999.99" step="0.01" value={price} onChange={e => setPrice(e.target.value)}/></label></div>
       <label>Nombre *<input required maxLength={150} value={name} onChange={e => setName(e.target.value)}/></label>

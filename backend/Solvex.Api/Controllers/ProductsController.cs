@@ -15,6 +15,7 @@ public sealed class ProductsController(ProductService service) : ControllerBase
     [ProducesResponseType(typeof(ProductDto), 200)]
     [ProducesResponseType(404)]
     public async Task<ActionResult<ProductDto>> Get(int id, CancellationToken ct) => Ok(await service.GetAsync(id, ct));
+    /// <summary>Registra un producto con código y nombre únicos, incluidos productos inactivos. El nombre ignora mayúsculas y espacios exteriores.</summary>
     [HttpPost]
     [ProducesResponseType(typeof(ProductDto), 201)]
     [ProducesResponseType(400)]
@@ -24,6 +25,7 @@ public sealed class ProductsController(ProductService service) : ControllerBase
         var product = await service.CreateAsync(input, ct);
         return CreatedAtAction(nameof(Get), new { id = product.Id }, product);
     }
+    /// <summary>Edita un producto. No permite usar el nombre de otro producto; conservar el propio nombre es válido.</summary>
     [HttpPut("{id:int}")]
     [ProducesResponseType(typeof(ProductDto), 200)]
     [ProducesResponseType(400)]

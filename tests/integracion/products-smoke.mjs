@@ -4,7 +4,8 @@ const base = process.env.SOLVEX_TEST_API_URL;
 if (!base) throw new Error('Define SOLVEX_TEST_API_URL, por ejemplo http://localhost:5080/api');
 const origin = process.env.SOLVEX_TEST_ORIGIN ?? 'http://localhost:5173';
 const url = base.replace(/\/$/, '');
-const input = { code: `TEST-${Date.now()}`, name: 'Cuaderno de prueba HU-01', description: 'Prueba de integración SCRUM-11', price: 12.5 };
+const key = Date.now();
+const input = { code: `TEST-${key}`, name: `Cuaderno cuadriculado ${key}`, description: 'Prueba de integración SCRUM-11', price: 12.5 };
 const send = (path, method = 'GET', body) => fetch(`${url}${path}`, { method, headers: { 'Content-Type': 'application/json', Origin: origin }, body: body === undefined ? undefined : JSON.stringify(body) });
 let response = await send('/products');
 assert.equal(response.status, 200);
@@ -30,7 +31,7 @@ assert.equal(response.status, 409);
 response = await send(`/products/${created.id}`);
 assert.equal(response.status, 200);
 assert.equal((await response.json()).price, 12.5);
-response = await send(`/products/${created.id}`, 'PUT', { ...input, name: 'Cuaderno actualizado HU-01', price: 15 });
+response = await send(`/products/${created.id}`, 'PUT', { ...input, name: `Cuaderno rayado ${key}`, price: 15 });
 assert.equal(response.status, 200);
 assert.equal((await response.json()).price, 15);
 for (let i = 0; i < 2; i++) {
@@ -40,7 +41,7 @@ for (let i = 0; i < 2; i++) {
 response = await send(`/products/${created.id}`);
 const inactive = await response.json();
 assert.equal(inactive.isActive, false);
-assert.equal(inactive.name, 'Cuaderno actualizado HU-01');
+assert.equal(inactive.name, `Cuaderno rayado ${key}`);
 response = await send('/products');
 assert.ok((await response.json()).some(p => p.id === created.id && p.isActive === false));
 response = await send('/products/2147483647');

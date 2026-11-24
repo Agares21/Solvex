@@ -7,6 +7,7 @@ erDiagram
         int Id PK
         nvarchar40 Code UK
         nvarchar150 Name
+        nvarchar150 NormalizedName UK "calculado; ignora caso y espacios exteriores"
         nvarchar1000 Description "opcional"
         decimal10_2 Price
         bit IsActive
@@ -63,3 +64,9 @@ Migraciones: `InitialProducts` original y `AddInventory` aditiva. La segunda añ
 Sprint 2 añade proveedores, compras y detalles con `Sprint2SuppliersAndPurchases`: ver [migraciones](migrations.md). Crear compra guarda cabecera y detalles en la transacción automática de SaveChanges y no cambia stock. Recibir compra reclama el estado Pending con un UPDATE condicionado, luego reutiliza InventoryRepository dentro de esa misma transacción; cualquier fallo revierte estado, fecha, saldos y movimientos.
 
 `InventoryMovements.PurchaseDetailId` nullable identifica movimientos de recepción. Un índice único filtrado impide dos movimientos por detalle, sin afectar ajustes manuales que dejan esa referencia null. Los detalles no duplican saldo: almacenan cantidades compradas y costos, mientras que `Products.Stock` sigue siendo la única existencia actual. La API no expone edición/eliminación de compras ni movimientos.
+
+## Sprint 3 — clientes, pedidos y maquetas
+
+`Customers` se relaciona con muchos `Orders` y `Mockups`. Un pedido tiene detalles de productos con precio unitario y subtotal históricos; crear o editar un pedido no modifica inventario. Una maqueta pertenece a un cliente y contiene varios `MockupPayments`. El saldo pendiente se calcula, no se persiste: `AgreedPrice - SUM(MockupPayments.Amount)`.
+
+Las relaciones nuevas son restrictivas. Los índices `(CustomerId, RegisteredAt, Id)` y `(CustomerId, RequestedAt, Id)` sirven al historial por cliente; el índice `(MockupId, PaidAt, Id)` sirve al historial de pagos. Cada detalle de pedido es único por producto/pedido.

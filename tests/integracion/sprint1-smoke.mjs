@@ -9,8 +9,8 @@ async function send(path, method = 'GET', body, expected = 200) {
   return { response, data: text ? JSON.parse(text) : undefined };
 }
 const suffix = Date.now();
-const first = (await send('/products', 'POST', { code: `S1-A-${suffix}`, name: 'Prueba inventario Sprint 1', price: 10 }, 201)).data;
-const second = (await send('/products', 'POST', { code: `S1-B-${suffix}`, name: 'Prueba disponibilidad Sprint 1', price: 2 }, 201)).data;
+const first = (await send('/products', 'POST', { code: `S1-A-${suffix}`, name: `Agenda escolar ${suffix}`, price: 10 }, 201)).data;
+const second = (await send('/products', 'POST', { code: `S1-B-${suffix}`, name: `Regla escolar ${suffix}`, price: 2 }, 201)).data;
 const path = `/inventory/${first.id}`;
 const move = (type, quantity, reason = 'Prueba Sprint 1') => send(`${path}/movements`, 'POST', { type, quantity, reason }, 201);
 assert.equal((await send(path)).data.stock, 0);

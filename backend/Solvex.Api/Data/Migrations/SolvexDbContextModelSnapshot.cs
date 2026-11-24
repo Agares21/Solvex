@@ -22,6 +22,34 @@ namespace Solvex.Api.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Solvex.Api.Entities.Customer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(254)
+                        .HasColumnType("nvarchar(254)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("Customers", (string)null);
+                });
+
             modelBuilder.Entity("Solvex.Api.Entities.InventoryMovement", b =>
                 {
                     b.Property<long>("Id")
@@ -68,6 +96,179 @@ namespace Solvex.Api.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Solvex.Api.Entities.Mockup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AgreedPrice")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("DeliveryAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Institution")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Observations")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTimeOffset>("RequestedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Size")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTimeOffset>("StatusUpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId", "RequestedAt", "Id");
+
+                    b.ToTable("Mockups", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Mockups_AgreedPrice", "[AgreedPrice] > 0");
+
+                            t.HasCheckConstraint("CK_Mockups_Status", "[Status] IN ('Requested', 'InProgress', 'Completed')");
+                        });
+                });
+
+            modelBuilder.Entity("Solvex.Api.Entities.MockupPayment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("MockupId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTimeOffset>("PaidAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MockupId", "PaidAt", "Id");
+
+                    b.ToTable("MockupPayments", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_MockupPayments_Amount", "[Amount] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Solvex.Api.Entities.Order", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Observations")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTimeOffset>("RegisteredAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId", "RegisteredAt", "Id");
+
+                    b.ToTable("Orders", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Orders_Status", "[Status] IN ('Pending', 'InProgress', 'Delivered')");
+
+                            t.HasCheckConstraint("CK_Orders_Total", "[Total] >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Solvex.Api.Entities.OrderDetail", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("OrderId", "ProductId")
+                        .IsUnique();
+
+                    b.ToTable("OrderDetails", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_OrderDetails_Quantity", "[Quantity] BETWEEN 1 AND 1000000");
+
+                            t.HasCheckConstraint("CK_OrderDetails_Subtotal", "[Subtotal] = [Quantity] * [UnitPrice]");
+
+                            t.HasCheckConstraint("CK_OrderDetails_UnitPrice", "[UnitPrice] >= 0");
+                        });
+                });
+
             modelBuilder.Entity("Solvex.Api.Entities.Product", b =>
                 {
                     b.Property<int>("Id")
@@ -93,6 +294,13 @@ namespace Solvex.Api.Data.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
+                    b.Property<string>("NormalizedName")
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)")
+                        .HasComputedColumnSql("UPPER(LTRIM(RTRIM([Name]))) COLLATE Latin1_General_100_CI_AS", true);
+
                     b.Property<decimal>("Price")
                         .HasPrecision(10, 2)
                         .HasColumnType("decimal(10,2)");
@@ -105,6 +313,9 @@ namespace Solvex.Api.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("NormalizedName")
                         .IsUnique();
 
                     b.ToTable("Products", null, t =>
@@ -255,6 +466,58 @@ namespace Solvex.Api.Data.Migrations
                     b.Navigation("PurchaseDetail");
                 });
 
+            modelBuilder.Entity("Solvex.Api.Entities.Mockup", b =>
+                {
+                    b.HasOne("Solvex.Api.Entities.Customer", "Customer")
+                        .WithMany("Mockups")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("Solvex.Api.Entities.MockupPayment", b =>
+                {
+                    b.HasOne("Solvex.Api.Entities.Mockup", "Mockup")
+                        .WithMany("Payments")
+                        .HasForeignKey("MockupId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Mockup");
+                });
+
+            modelBuilder.Entity("Solvex.Api.Entities.Order", b =>
+                {
+                    b.HasOne("Solvex.Api.Entities.Customer", "Customer")
+                        .WithMany("Orders")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("Solvex.Api.Entities.OrderDetail", b =>
+                {
+                    b.HasOne("Solvex.Api.Entities.Order", "Order")
+                        .WithMany("Details")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Solvex.Api.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("Solvex.Api.Entities.Purchase", b =>
                 {
                     b.HasOne("Solvex.Api.Entities.Supplier", "Supplier")
@@ -283,6 +546,23 @@ namespace Solvex.Api.Data.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("Purchase");
+                });
+
+            modelBuilder.Entity("Solvex.Api.Entities.Customer", b =>
+                {
+                    b.Navigation("Mockups");
+
+                    b.Navigation("Orders");
+                });
+
+            modelBuilder.Entity("Solvex.Api.Entities.Mockup", b =>
+                {
+                    b.Navigation("Payments");
+                });
+
+            modelBuilder.Entity("Solvex.Api.Entities.Order", b =>
+                {
+                    b.Navigation("Details");
                 });
 
             modelBuilder.Entity("Solvex.Api.Entities.Purchase", b =>

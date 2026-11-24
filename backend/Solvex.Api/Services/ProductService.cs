@@ -7,6 +7,7 @@ namespace Solvex.Api.Services;
 
 public sealed class ProductNotFoundException() : Exception("El producto no existe.");
 public sealed class DuplicateProductCodeException() : Exception("Ya existe un producto con ese código.");
+public sealed class DuplicateProductNameException() : Exception("Ya existe un producto con ese nombre.");
 
 public sealed class ProductService(IProductRepository repository)
 {
@@ -16,6 +17,7 @@ public sealed class ProductService(IProductRepository repository)
     {
         var normalized = Validate(input);
         await CheckCodeAsync(normalized.Code, null, ct);
+        await CheckNameAsync(normalized.Name, null, ct);
         var product = new Product();
         Apply(product, normalized);
         await repository.AddAsync(product, ct);
@@ -27,6 +29,7 @@ public sealed class ProductService(IProductRepository repository)
         var normalized = Validate(input);
         var product = await RequiredAsync(id, ct);
         await CheckCodeAsync(normalized.Code, id, ct);
+        await CheckNameAsync(normalized.Name, id, ct);
         Apply(product, normalized);
         await repository.SaveAsync(ct);
         return Map(product);
@@ -56,6 +59,10 @@ public sealed class ProductService(IProductRepository repository)
         if (decimal.Round(normalized.Price!.Value, 2) != normalized.Price.Value)
             throw new ValidationException("El precio admite como máximo dos decimales.");
         return normalized;
+    }
+    private async Task CheckNameAsync(string name, int? id, CancellationToken ct)
+    {
+        if (await repository.NameExistsAsync(name, id, ct)) throw new DuplicateProductNameException();
     }
     private static void Apply(Product p, ProductInput input) { p.Code = input.Code; p.Name = input.Name; p.Description = input.Description; p.Price = input.Price!.Value; }
     private static ProductDto Map(Product p) => new(p.Id, p.Code, p.Name, p.Description, p.Price, p.IsActive);

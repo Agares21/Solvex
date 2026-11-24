@@ -77,7 +77,7 @@ public sealed class ProductServiceTests
     public async Task Update_RejectsDuplicateWithoutChangingProduct()
     {
         var first = await Service.CreateAsync(Valid);
-        var second = await Service.CreateAsync(Valid with { Code = "LIB-02" });
+        var second = await Service.CreateAsync(Valid with { Code = "LIB-02", Name = "Regla" });
         await Assert.ThrowsAsync<DuplicateProductCodeException>(() => Service.UpdateAsync(second.Id, Valid));
         Assert.Equal("LIB-02", (await Service.GetAsync(second.Id)).Code);
         Assert.Equal("LIB-01", first.Code);
@@ -106,6 +106,38 @@ public sealed class ProductServiceTests
         Assert.Equal(8, Assert.Single(repository.Items).Stock);
         Assert.Equal(created.Code, repository.Items[0].Code);
     }
+    [Theory]
+    [InlineData("Cuaderno")]
+    [InlineData("cuaderno")]
+    [InlineData(" CUADERNO ")]
+    public async Task Create_RejectsDuplicateName(string name)
+    {
+        await Service.CreateAsync(Valid);
+        await Assert.ThrowsAsync<DuplicateProductNameException>(() => Service.CreateAsync(Valid with { Code = "OTRO", Name = name }));
+        Assert.Single(repository.Items);
+    }
+    [Fact]
+    public async Task Update_RejectsAnotherProductsNameWithoutChangingIt()
+    {
+        await Service.CreateAsync(Valid);
+        var second = await Service.CreateAsync(Valid with { Code = "B", Name = "Regla" });
+        await Assert.ThrowsAsync<DuplicateProductNameException>(() => Service.UpdateAsync(second.Id, Valid with { Code = "B", Name = " cuaderno " }));
+        Assert.Equal("Regla", (await Service.GetAsync(second.Id)).Name);
+    }
+    [Fact]
+    public async Task Update_AllowsKeepingOwnName()
+    {
+        var first = await Service.CreateAsync(Valid);
+        var result = await Service.UpdateAsync(first.Id, Valid with { Name = " CUADERNO ", Price = 4 });
+        Assert.Equal("CUADERNO", result.Name);
+    }
+    [Fact]
+    public async Task InactiveProduct_StillReservesItsName()
+    {
+        var first = await Service.CreateAsync(Valid);
+        await Service.DeactivateAsync(first.Id);
+        await Assert.ThrowsAsync<DuplicateProductNameException>(() => Service.CreateAsync(Valid with { Code = "B" }));
+    }
     private sealed class FakeRepository : IProductRepository
     {
         public List<Product> Items { get; } = [];
@@ -113,6 +145,7 @@ public sealed class ProductServiceTests
         public Task<List<Product>> ListAsync(CancellationToken ct) => Task.FromResult(Items.ToList());
         public Task<Product?> FindAsync(int id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(p => p.Id == id));
         public Task<bool> CodeExistsAsync(string code, int? exceptId, CancellationToken ct) => Task.FromResult(Items.Any(p => p.Code == code && p.Id != exceptId));
+        public Task<bool> NameExistsAsync(string name, int? exceptId, CancellationToken ct) => Task.FromResult(Items.Any(p => string.Equals(p.Name.Trim(), name.Trim(), StringComparison.OrdinalIgnoreCase) && p.Id != exceptId));
         public Task AddAsync(Product product, CancellationToken ct) { product.Id = Items.Count + 1; Items.Add(product); return Task.CompletedTask; }
         public Task SaveAsync(CancellationToken ct) { Saves++; return Task.CompletedTask; }
     }

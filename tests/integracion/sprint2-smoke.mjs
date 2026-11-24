@@ -9,7 +9,7 @@ async function send(path, method = 'GET', body, expected = 200) {
   return { response, data: text ? JSON.parse(text) : undefined };
 }
 const key = Date.now();
-const supplierInput = { identifier: `HTTP-${key}`, name: `Proveedor HTTP ${key}`, contactName: 'Contacto de prueba', phone: '+591 77777777', email: 'proveedor@example.com', address: 'Dirección de prueba' };
+const supplierInput = { identifier: `HTTP-${key}`, name: `Suministros Escolares ${key}`, contactName: 'Contacto de prueba', phone: '+591 77777777', email: 'proveedor@example.com', address: 'Dirección de prueba' };
 const supplier = await send('/suppliers', 'POST', supplierInput, 201);
 assert.ok(supplier.response.headers.get('location')?.endsWith(`/suppliers/${supplier.data.id}`));
 assert.equal((await send(`/suppliers/${supplier.data.id}`)).data.identifier, supplierInput.identifier);
@@ -19,8 +19,8 @@ await send('/suppliers', 'POST', supplierInput, 409);
 await send('/suppliers', 'POST', { identifier: `INVALID-${key}`, name: 'Sin contacto' }, 400);
 await send('/suppliers', 'POST', { ...supplierInput, identifier: `INVALID-${key}`, email: 'invalido' }, 400);
 await send('/suppliers/2147483647', 'GET', undefined, 404);
-const first = (await send('/products', 'POST', { code: `HTTP-A-${key}`, name: 'Producto compra A', price: 10 }, 201)).data;
-const second = (await send('/products', 'POST', { code: `HTTP-B-${key}`, name: 'Producto compra B', price: 2 }, 201)).data;
+const first = (await send('/products', 'POST', { code: `HTTP-A-${key}`, name: `Archivador oficio ${key}`, price: 10 }, 201)).data;
+const second = (await send('/products', 'POST', { code: `HTTP-B-${key}`, name: `Carpeta carta ${key}`, price: 2 }, 201)).data;
 const input = { supplierId: supplier.data.id, details: [{ productId: first.id, quantity: 3, unitCost: 2.50 }, { productId: second.id, quantity: 2, unitCost: 1.20 }] };
 const created = await send('/purchases', 'POST', input, 201);
 const purchase = created.data;

@@ -316,6 +316,7 @@
         "tags": [
           "Products"
         ],
+        "summary": "Registra un producto con código y nombre únicos, incluidos productos inactivos. El nombre ignora mayúsculas y espacios exteriores.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -412,6 +413,7 @@
         "tags": [
           "Products"
         ],
+        "summary": "Edita un producto. No permite usar el nombre de otro producto; conservar el propio nombre es válido.",
         "parameters": [
           {
             "name": "id",
