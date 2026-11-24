@@ -1,0 +1,133 @@
+
+.maqueta-form-container {
+  width: 100%;
+}
+
+.maqueta-form {
+  background: #ffffff;
+  padding: 28px;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+}
+
+.maqueta-form-header {
+  margin-bottom: 25px;
+}
+
+.maqueta-form-header h2 {
+  margin: 0 0 8px;
+  color: #243247;
+  font-size: 22px;
+}
+
+.maqueta-form-header p {
+  margin: 0;
+  color: #7b8494;
+  font-size: 14px;
+}
+
+.maqueta-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.maqueta-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.maqueta-form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #344054;
+}
+
+.maqueta-form-group input,
+.maqueta-form-group select,
+.maqueta-form-group textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid #d8dee8;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #344054;
+  background: white;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.maqueta-form-group input:focus,
+.maqueta-form-group select:focus,
+.maqueta-form-group textarea:focus {
+  border-color: #4676c5;
+  box-shadow: 0 0 0 3px rgba(70, 118, 197, 0.1);
+}
+
+.maqueta-form-group textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.maqueta-observaciones {
+  margin-top: 5px;
+}
+
+.maqueta-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 25px;
+}
+
+.maqueta-btn-cancelar,
+.maqueta-btn-guardar {
+  padding: 11px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.maqueta-btn-cancelar {
+  background: white;
+  border: 1px solid #d8dee8;
+  color: #475467;
+}
+
+.maqueta-btn-cancelar:hover {
+  background: #f8fafc;
+}
+
+.maqueta-btn-guardar {
+  background: #3768b5;
+  color: white;
+  border: 1px solid #3768b5;
+}
+
+.maqueta-btn-guardar:hover {
+  background: #285395;
+}
+
+@media (max-width: 600px) {
+  .maqueta-form {
+    padding: 18px;
+  }
+
+  .maqueta-form-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .maqueta-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .maqueta-form-actions button {
+    width: 100%;
+  }
+}
