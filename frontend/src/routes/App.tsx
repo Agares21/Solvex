@@ -9,6 +9,8 @@ import SuppliersPage from '../features/sprint2/SuppliersPage';
 import Compras from '../features/sprint2/components/compras/Compras';
 import PedidosPage from '../pages/PedidosPage';
 import PedidoDetallePage from '../pages/PedidoDetallePage';
+import MaquetasPage from '../pages/MaquetasPage';
+import MaquetaDetallePage from '../pages/MaquetaDetallePage';
 
 const sections = [
   { to: '/', icon: '🏠', label: 'Inicio', title: 'Panel principal' },
@@ -18,6 +20,7 @@ const sections = [
   { to: '/suppliers', icon: '🚚', label: 'Proveedores', title: 'Gestión de proveedores' },
   { to: '/purchases', icon: '🛒', label: 'Compras', title: 'Gestión de compras' },
   { to: '/orders', icon: '📋', label: 'Pedidos', title: 'Gestión de pedidos' },
+  { to: '/maquetas', icon: '🧩', label: 'Maquetas', title: 'Gestión de maquetas' },
 ];
 
 function currentSection(pathname: string) {
@@ -44,7 +47,7 @@ export function App() {
       </nav>
       <div className="upcoming">
         <p>PRÓXIMAMENTE</p>
-        {['Clientes', 'Maquetas'].map(name => (
+        {['Clientes'].map(name => (
           <span key={name}>
             {name}
             <small>Pendiente</small>
@@ -72,6 +75,8 @@ export function App() {
             <Route path="/purchases" element={<Compras/>}/>
             <Route path="/orders" element={<PedidosPage />} />
             <Route path="/orders/:id" element={<PedidoDetallePage />} />
+            <Route path="/maquetas" element={<MaquetasPage />} />
+            <Route path="/maquetas/:id" element={<MaquetaDetallePage />} />
             
             <Route path="*" element={<div className="panel empty"><h1>Página no encontrada</h1><Link to="/">Volver al inicio</Link></div>}/>
           </Routes>
