@@ -7,6 +7,7 @@ import { InventoryPage } from '../pages/InventoryPage';
 import { AvailabilityPage } from '../pages/AvailabilityPage';
 import SuppliersPage from '../features/sprint2/SuppliersPage';
 import Compras from '../features/sprint2/components/compras/Compras';
+import PedidosPage from '../pages/PedidosPage';
 
 const sections = [
   { to: '/', icon: '🏠', label: 'Inicio', title: 'Panel principal' },
@@ -15,6 +16,7 @@ const sections = [
   { to: '/availability', icon: '🔎', label: 'Disponibilidad', title: 'Disponibilidad de productos' },
   { to: '/suppliers', icon: '🚚', label: 'Proveedores', title: 'Gestión de proveedores' },
   { to: '/purchases', icon: '🛒', label: 'Compras', title: 'Gestión de compras' },
+  { to: '/orders', icon: '📋', label: 'Pedidos', title: 'Gestión de pedidos' },
 ];
 
 function currentSection(pathname: string) {
@@ -39,7 +41,15 @@ export function App() {
       <nav className="navigation" aria-label="Navegación principal">
         {sections.map(s => <NavLink key={s.to} to={s.to} end={s.to === '/'} className="nav-item"><span aria-hidden="true">{s.icon}</span>{s.label}</NavLink>)}
       </nav>
-      <div className="upcoming"><p>PRÓXIMAMENTE</p>{['Pedidos', 'Clientes', 'Maquetas'].map(name => <span key={name}>{name}<small>Pendiente</small></span>)}</div>
+      <div className="upcoming">
+        <p>PRÓXIMAMENTE</p>
+        {['Clientes', 'Maquetas'].map(name => (
+          <span key={name}>
+            {name}
+            <small>Pendiente</small>
+          </span>
+        ))}
+      </div>
       <div className="sidebar-user"><span className="avatar" aria-hidden="true">AD</span><div><strong>Administrador</strong><small>Personal de librería</small></div></div>
     </aside>
     <div className="workspace">
@@ -59,6 +69,8 @@ export function App() {
             <Route path="/availability" element={<AvailabilityPage/>}/>
             <Route path="/suppliers" element={<SuppliersPage/>}/>
             <Route path="/purchases" element={<Compras/>}/>
+            <Route path="/orders" element={<PedidosPage />} />
+            
             <Route path="*" element={<div className="panel empty"><h1>Página no encontrada</h1><Link to="/">Volver al inicio</Link></div>}/>
           </Routes>
         </div>
