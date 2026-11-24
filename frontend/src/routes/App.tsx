@@ -8,6 +8,7 @@ import { AvailabilityPage } from '../pages/AvailabilityPage';
 import SuppliersPage from '../features/sprint2/SuppliersPage';
 import Compras from '../features/sprint2/components/compras/Compras';
 import PedidosPage from '../pages/PedidosPage';
+import PedidoDetallePage from '../pages/PedidoDetallePage';
 
 const sections = [
   { to: '/', icon: '🏠', label: 'Inicio', title: 'Panel principal' },
@@ -70,6 +71,7 @@ export function App() {
             <Route path="/suppliers" element={<SuppliersPage/>}/>
             <Route path="/purchases" element={<Compras/>}/>
             <Route path="/orders" element={<PedidosPage />} />
+            <Route path="/orders/:id" element={<PedidoDetallePage />} />
             
             <Route path="*" element={<div className="panel empty"><h1>Página no encontrada</h1><Link to="/">Volver al inicio</Link></div>}/>
           </Routes>

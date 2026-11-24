@@ -4,6 +4,7 @@ import PedidoForm from "../features/sprint2/components/pedidos/PedidoForm.jsx";
 import "./PedidosPage.css";
 
 function PedidosPage() {
+    const navigate = useNavigate();
   const [pedidos, setPedidos] = useState([
     {
       id: "PED-001",
@@ -187,16 +188,16 @@ function PedidosPage() {
                   </td>
 
                   <td>
-                    <button
-                      className="pedido-btn-ver"
-                      title="Ver pedido"
-                      onClick={() =>
-                        alert(
-                          `Pedido ${pedido.id}\nCliente: ${pedido.cliente}\nTotal: Bs. ${pedido.total}`
-                        )
-                      }
-                    >
-                      Ver
+                   <button
+                        className="pedido-btn-ver"
+                        title="Ver pedido"
+                        onClick={() =>
+                            navigate(`/orders/${pedido.id}`, {
+                            state: { pedido },
+                            })
+                        }
+                        >
+                        Ver
                     </button>
                   </td>
                 </tr>
