@@ -1,54 +1,88 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MaquetaForm from "../components/maquetas/MaquetaForm";
 import "./MaquetasPage.css";
+import {
+  obtenerMaquetas,
+  guardarMaquetas,
+} from "../components/maquetas/maquetasStorage";
 
 function MaquetasPage() {
   const navigate = useNavigate();
 
-  const [solicitudes, setSolicitudes] = useState([
-    {
-      id: "MAQ-001",
-      cliente: "María López",
-      institucion: "Colegio San Calixto",
-      tipo: "Educativa",
-      tamano: "Mediana",
-      fechaEntrega: "2026-11-28",
-      horaEntrega: "15:00",
-      observaciones: "Maqueta del sistema solar",
-      estado: "Pendiente",
-      fechaRegistro: "23/11/2026",
-    },
-    {
-      id: "MAQ-002",
-      cliente: "Carlos Fernández",
-      institucion: "Universidad Mayor de San Andrés",
-      tipo: "Arquitectónica",
-      tamano: "Grande",
-      fechaEntrega: "2026-12-02",
-      horaEntrega: "10:00",
-      observaciones: "Proyecto de vivienda",
-      estado: "En proceso",
-      fechaRegistro: "23/11/2026",
-    },
-  ]);
+  const [solicitudes, setSolicitudes] = useState(() => {
+    const guardadas = obtenerMaquetas();
+
+    if (guardadas !== null) {
+      return guardadas;
+    }
+
+    return [
+      {
+        id: "MAQ-001",
+        cliente: "María López",
+        institucion: "Colegio San Calixto",
+        tipo: "Educativa",
+        tamano: "Mediana",
+        fechaEntrega: "2026-11-28",
+        horaEntrega: "15:00",
+        observaciones: "Maqueta del sistema solar",
+        estado: "Pendiente",
+        fechaRegistro: "23/11/2026",
+        precioTotal: 0,
+        pagos: [],
+      },
+      {
+        id: "MAQ-002",
+        cliente: "Carlos Fernández",
+        institucion: "Universidad Mayor de San Andrés",
+        tipo: "Arquitectónica",
+        tamano: "Grande",
+        fechaEntrega: "2026-12-02",
+        horaEntrega: "10:00",
+        observaciones: "Proyecto de vivienda",
+        estado: "En proceso",
+        fechaRegistro: "23/11/2026",
+        precioTotal: 0,
+        pagos: [],
+      },
+    ];
+  });
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [busqueda, setBusqueda] = useState("");
 
-  const registrarSolicitud = (nuevaSolicitud) => {
-    const solicitud = {
-      ...nuevaSolicitud,
-      id: `MAQ-${String(solicitudes.length + 1).padStart(3, "0")}`,
-      estado: "Pendiente",
-      fechaRegistro: new Date().toLocaleDateString("es-BO"),
-    };
+  // Guardar automáticamente las solicitudes en localStorage
+  useEffect(() => {
+    guardarMaquetas(solicitudes);
+  }, [solicitudes]);
 
-    setSolicitudes([solicitud, ...solicitudes]);
+  // Registrar una nueva solicitud
+  const registrarSolicitud = (nuevaSolicitud) => {
+    setSolicitudes((actuales) => {
+      const siguienteNumero =
+        actuales.reduce((maximo, solicitud) => {
+          const numero = Number(solicitud.id.split("-")[1]) || 0;
+          return Math.max(maximo, numero);
+        }, 0) + 1;
+
+      const solicitud = {
+        ...nuevaSolicitud,
+        id: `MAQ-${String(siguienteNumero).padStart(3, "0")}`,
+        estado: "Pendiente",
+        fechaRegistro: new Date().toLocaleDateString("es-BO"),
+        precioTotal: 0,
+        pagos: [],
+      };
+
+      return [solicitud, ...actuales];
+    });
+
     setMostrarFormulario(false);
   };
 
+  // Filtrar solicitudes
   const solicitudesFiltradas = solicitudes.filter((solicitud) => {
     const texto = busqueda.toLowerCase();
 
@@ -59,6 +93,7 @@ function MaquetasPage() {
     );
   });
 
+  // Contadores de estados
   const pendientes = solicitudes.filter(
     (s) => s.estado === "Pendiente"
   ).length;
@@ -71,6 +106,7 @@ function MaquetasPage() {
     (s) => s.estado === "Completada"
   ).length;
 
+  // Formatear fecha
   const formatearFecha = (fecha) => {
     if (!fecha) return "-";
 
@@ -83,7 +119,9 @@ function MaquetasPage() {
       <div className="maquetas-header">
         <div>
           <h1>Gestión de maquetas</h1>
-          <p>Registra y organiza las solicitudes de elaboración de maquetas.</p>
+          <p>
+            Registra y organiza las solicitudes de elaboración de maquetas.
+          </p>
         </div>
 
         <button
@@ -150,11 +188,13 @@ function MaquetasPage() {
                   <td>{solicitud.cliente}</td>
                   <td>{solicitud.institucion}</td>
                   <td>{solicitud.tipo}</td>
+
                   <td>
                     {formatearFecha(solicitud.fechaEntrega)}
                     <br />
                     <small>{solicitud.horaEntrega}</small>
                   </td>
+
                   <td>
                     <span
                       className={`maqueta-estado maqueta-estado-${solicitud.estado
@@ -164,6 +204,7 @@ function MaquetasPage() {
                       {solicitud.estado}
                     </span>
                   </td>
+
                   <td>
                     <button
                       className="maqueta-btn-ver"

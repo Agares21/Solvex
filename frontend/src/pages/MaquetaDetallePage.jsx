@@ -1,5 +1,12 @@
 
+import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import PagoMaquetaForm from "../components/maquetas/PagoMaquetaForm";
+import {
+  obtenerMaquetas,
+  guardarMaquetas,
+} from "../components/maquetas/maquetasStorage";
+
 import "./MaquetaDetallePage.css";
 
 function MaquetaDetallePage() {
@@ -7,8 +14,34 @@ function MaquetaDetallePage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const solicitud = location.state?.solicitud;
+  // Obtener la solicitud guardada
+  const [solicitud, setSolicitud] = useState(() => {
+    const guardadas = obtenerMaquetas();
 
+    return (
+      guardadas?.find((item) => item.id === id) ||
+      location.state?.solicitud ||
+      null
+    );
+  });
+
+  const [mostrarFormularioPago, setMostrarFormularioPago] = useState(false);
+
+  // Registrar un anticipo o nuevo pago
+  const registrarPago = (solicitudActualizada) => {
+    const guardadas = obtenerMaquetas() || [];
+
+    const actualizadas = guardadas.map((item) =>
+      item.id === id ? solicitudActualizada : item
+    );
+
+    guardarMaquetas(actualizadas);
+
+    setSolicitud(solicitudActualizada);
+    setMostrarFormularioPago(false);
+  };
+
+  // Formatear fecha
   const formatearFecha = (fecha) => {
     if (!fecha) return "-";
 
@@ -16,6 +49,7 @@ function MaquetaDetallePage() {
     return `${day}/${month}/${year}`;
   };
 
+  // Si no existe la solicitud
   if (!solicitud) {
     return (
       <div className="maqueta-detalle-page">
@@ -127,6 +161,35 @@ function MaquetaDetallePage() {
           </div>
         </section>
       </div>
+
+      {/* SECCIÓN DE REGISTRO DE PAGOS */}
+      <section className="maqueta-pagos-section">
+        <div className="maqueta-pagos-header">
+          <div>
+            <h2>Gestión de pagos</h2>
+            <p>Registra los anticipos y pagos de esta solicitud.</p>
+          </div>
+
+          <button
+            className="maqueta-pagos-btn"
+            onClick={() => setMostrarFormularioPago(true)}
+          >
+            + Registrar pago
+          </button>
+        </div>
+
+        {mostrarFormularioPago && (
+          <div className="maqueta-pagos-modal-overlay">
+            <div className="maqueta-pagos-modal">
+              <PagoMaquetaForm
+                solicitud={solicitud}
+                onGuardar={registrarPago}
+                onCancelar={() => setMostrarFormularioPago(false)}
+              />
+            </div>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

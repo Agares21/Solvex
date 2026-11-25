@@ -1,0 +1,98 @@
+
+.pago-form-container {
+  width: 100%;
+}
+
+.pago-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pago-form-header h2 {
+  margin: 0 0 8px;
+  color: #24344d;
+  font-size: 21px;
+}
+
+.pago-form-header p {
+  margin: 0;
+  color: #718096;
+  font-size: 14px;
+}
+
+.pago-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pago-form-group label {
+  color: #344054;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pago-form-group input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  outline: none;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.pago-form-group input:focus {
+  border-color: #315b91;
+  box-shadow: 0 0 0 3px rgba(49, 91, 145, 0.12);
+}
+
+.pago-form-group small {
+  color: #718096;
+  font-size: 12px;
+}
+
+.pago-form-error {
+  padding: 12px;
+  border-radius: 8px;
+  background: #fff1f0;
+  color: #c0392b;
+  font-size: 13px;
+  border: 1px solid #f5c6c2;
+}
+
+.pago-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.pago-form-actions button {
+  padding: 11px 18px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.pago-btn-cancelar {
+  background: #f0f2f5;
+  color: #475467;
+}
+
+.pago-btn-guardar {
+  background: #315b91;
+  color: white;
+}
+
+.pago-btn-guardar:hover {
+  background: #244775;
+}
+
+.pago-btn-cancelar:hover {
+  background: #e4e7ec;
+}

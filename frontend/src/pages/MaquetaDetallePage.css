@@ -127,3 +127,85 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+
+.maqueta-pagos-section {
+  margin-top: 25px;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.maqueta-pagos-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.maqueta-pagos-header h2 {
+  margin: 0 0 7px;
+  color: #24344d;
+  font-size: 20px;
+}
+
+.maqueta-pagos-header p {
+  margin: 0;
+  color: #718096;
+  font-size: 14px;
+}
+
+.maqueta-pagos-btn {
+  padding: 11px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #315b91;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.maqueta-pagos-btn:hover {
+  background: #244775;
+}
+
+.maqueta-pagos-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.maqueta-pagos-modal {
+  width: 100%;
+  max-width: 480px;
+  padding: 28px;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.18);
+}
+
+@media (max-width: 600px) {
+  .maqueta-pagos-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .maqueta-pagos-modal {
+    padding: 20px;
+  }
+
+  .pago-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .pago-form-actions button {
+    width: 100%;
+  }
+}
