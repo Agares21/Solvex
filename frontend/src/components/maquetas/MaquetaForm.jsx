@@ -9,6 +9,7 @@ function MaquetaForm({ onGuardar, onCancelar }) {
   const [tamano, setTamano] = useState("");
   const [fechaEntrega, setFechaEntrega] = useState("");
   const [horaEntrega, setHoraEntrega] = useState("");
+  const [precioTotal, setPrecioTotal] = useState("");
   const [observaciones, setObservaciones] = useState("");
 
   const obtenerFechaMinima = () => {
@@ -29,7 +30,8 @@ function MaquetaForm({ onGuardar, onCancelar }) {
       !tipo ||
       !tamano ||
       !fechaEntrega ||
-      !horaEntrega
+      !horaEntrega ||
+      !precioTotal || Number(precioTotal) <= 0
     ) {
       alert("Por favor, complete todos los campos obligatorios.");
       return;
@@ -56,6 +58,7 @@ function MaquetaForm({ onGuardar, onCancelar }) {
       tamano,
       fechaEntrega,
       horaEntrega,
+      precioTotal: Number(precioTotal),
       observaciones: observaciones.trim(),
     };
 
@@ -163,6 +166,11 @@ function MaquetaForm({ onGuardar, onCancelar }) {
               onChange={(e) => setHoraEntrega(e.target.value)}
             />
           </div>
+        </div>
+
+        <div className="maqueta-form-group maqueta-observaciones">
+          <label htmlFor="maqueta-precio">Precio acordado (Bs) *</label>
+          <input id="maqueta-precio" type="number" min="0.01" step="0.01" value={precioTotal} onChange={(e) => setPrecioTotal(e.target.value)} />
         </div>
 
         <div className="maqueta-form-group maqueta-observaciones">

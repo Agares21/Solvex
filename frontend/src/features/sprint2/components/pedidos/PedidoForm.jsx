@@ -2,15 +2,7 @@
 import { useState } from "react";
 import "./PedidoForm.css";
 
-const productosDisponibles = [
-  { id: 1, nombre: "El principito", precio: 45 },
-  { id: 2, nombre: "Cien años de soledad", precio: 85 },
-  { id: 3, nombre: "Don Quijote de la Mancha", precio: 120 },
-  { id: 4, nombre: "Harry Potter", precio: 95 },
-  { id: 5, nombre: "Orgullo y prejuicio", precio: 60 },
-];
-
-function PedidoForm({ onGuardar, onCancelar }) {
+function PedidoForm({ productosDisponibles, onGuardar, onCancelar }) {
   const [cliente, setCliente] = useState("");
   const [productos, setProductos] = useState([]);
   const [observaciones, setObservaciones] = useState("");
@@ -40,7 +32,7 @@ function PedidoForm({ onGuardar, onCancelar }) {
         (p) => p.id === Number(item.productoId)
       );
 
-      return total + (producto ? producto.precio * item.cantidad : 0);
+      return total + (producto ? producto.price * item.cantidad : 0);
     }, 0);
   };
 
@@ -70,8 +62,8 @@ function PedidoForm({ onGuardar, onCancelar }) {
 
         return {
           productoId: producto.id,
-          nombre: producto.nombre,
-          precio: producto.precio,
+          nombre: producto.name,
+          precio: producto.price,
           cantidad: Number(item.cantidad),
         };
       }),
@@ -140,7 +132,7 @@ function PedidoForm({ onGuardar, onCancelar }) {
 
                 {productosDisponibles.map((producto) => (
                   <option key={producto.id} value={producto.id}>
-                    {producto.nombre} - Bs. {producto.precio}
+                  {producto.name} - Bs. {producto.price}
                   </option>
                 ))}
               </select>
