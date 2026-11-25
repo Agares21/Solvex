@@ -14,7 +14,6 @@ function MaquetaDetallePage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Obtener la solicitud guardada
   const [solicitud, setSolicitud] = useState(() => {
     const guardadas = obtenerMaquetas();
 
@@ -31,15 +30,31 @@ function MaquetaDetallePage() {
   const registrarPago = (solicitudActualizada) => {
     const guardadas = obtenerMaquetas() || [];
 
-    const actualizadas = guardadas.map((item) =>
-      item.id === id ? solicitudActualizada : item
-    );
+    const existe = guardadas.some((item) => item.id === id);
+
+    const actualizadas = existe
+      ? guardadas.map((item) =>
+          item.id === id ? solicitudActualizada : item
+        )
+      : [solicitudActualizada, ...guardadas];
 
     guardarMaquetas(actualizadas);
-
     setSolicitud(solicitudActualizada);
     setMostrarFormularioPago(false);
   };
+
+  // Calcular los importes
+  const precioTotal = Number(solicitud?.precioTotal) || 0;
+
+  const totalAnticipos = (solicitud?.pagos || []).reduce(
+    (total, pago) => total + (Number(pago.monto) || 0),
+    0
+  );
+
+  const saldoPendiente = Math.max(0, precioTotal - totalAnticipos);
+
+  const formatearDinero = (cantidad) =>
+    `Bs ${cantidad.toFixed(2)}`;
 
   // Formatear fecha
   const formatearFecha = (fecha) => {
@@ -49,7 +64,6 @@ function MaquetaDetallePage() {
     return `${day}/${month}/${year}`;
   };
 
-  // Si no existe la solicitud
   if (!solicitud) {
     return (
       <div className="maqueta-detalle-page">
@@ -162,12 +176,12 @@ function MaquetaDetallePage() {
         </section>
       </div>
 
-      {/* SECCIÓN DE REGISTRO DE PAGOS */}
+      {/* RESUMEN ECONÓMICO */}
       <section className="maqueta-pagos-section">
         <div className="maqueta-pagos-header">
           <div>
-            <h2>Gestión de pagos</h2>
-            <p>Registra los anticipos y pagos de esta solicitud.</p>
+            <h2>Resumen de pagos</h2>
+            <p>Estado económico de la solicitud.</p>
           </div>
 
           <button
@@ -176,6 +190,23 @@ function MaquetaDetallePage() {
           >
             + Registrar pago
           </button>
+        </div>
+
+        <div className="maqueta-resumen-pagos">
+          <div className="maqueta-resumen-item">
+            <span>Precio total</span>
+            <strong>{formatearDinero(precioTotal)}</strong>
+          </div>
+
+          <div className="maqueta-resumen-item">
+            <span>Total de anticipos</span>
+            <strong>{formatearDinero(totalAnticipos)}</strong>
+          </div>
+
+          <div className="maqueta-resumen-item">
+            <span>Saldo pendiente</span>
+            <strong>{formatearDinero(saldoPendiente)}</strong>
+          </div>
         </div>
 
         {mostrarFormularioPago && (
