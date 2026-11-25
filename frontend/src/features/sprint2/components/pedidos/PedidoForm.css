@@ -1,0 +1,218 @@
+
+.pedido-form-container {
+  width: 100%;
+}
+
+.pedido-form {
+  background: #ffffff;
+  padding: 28px;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+}
+
+.pedido-form-header {
+  margin-bottom: 25px;
+}
+
+.pedido-form-header h2 {
+  margin: 0 0 8px;
+  color: #243247;
+  font-size: 22px;
+}
+
+.pedido-form-header p {
+  margin: 0;
+  color: #7b8494;
+  font-size: 14px;
+}
+
+.pedido-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.pedido-form-group label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #344054;
+}
+
+.pedido-form-group input,
+.pedido-form-group select,
+.pedido-form-group textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid #d8dee8;
+  border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
+  outline: none;
+  font-family: inherit;
+}
+
+.pedido-form-group input:focus,
+.pedido-form-group select:focus,
+.pedido-form-group textarea:focus {
+  border-color: #4676c5;
+  box-shadow: 0 0 0 3px rgba(70, 118, 197, 0.1);
+}
+
+.pedido-form-group textarea {
+  resize: vertical;
+}
+
+.pedido-productos-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 25px 0 15px;
+}
+
+.pedido-productos-header h3 {
+  color: #344054;
+  font-size: 16px;
+  margin: 0;
+}
+
+.pedido-btn-agregar {
+  background: #eef4ff;
+  color: #3768b5;
+  border: 1px solid #d4e2fb;
+  padding: 9px 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.pedido-btn-agregar:hover {
+  background: #dfeaff;
+}
+
+.pedido-productos-vacio {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  color: #8490a0;
+  margin-bottom: 18px;
+}
+
+.pedido-productos-vacio p {
+  margin: 5px;
+  font-size: 14px;
+}
+
+.pedido-producto-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 15px;
+  background: #f8fafc;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.pedido-producto-select {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.pedido-cantidad {
+  width: 100px;
+  margin-bottom: 0;
+}
+
+.pedido-btn-eliminar {
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: #feecec;
+  color: #d64545;
+  font-size: 23px;
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.pedido-btn-eliminar:hover {
+  background: #fbd5d5;
+}
+
+.pedido-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  margin: 20px 0;
+  color: #344054;
+}
+
+.pedido-total strong {
+  font-size: 20px;
+  color: #243247;
+}
+
+.pedido-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 25px;
+}
+
+.pedido-btn-cancelar,
+.pedido-btn-guardar {
+  padding: 11px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pedido-btn-cancelar {
+  background: white;
+  border: 1px solid #d8dee8;
+  color: #475467;
+}
+
+.pedido-btn-guardar {
+  background: #3768b5;
+  color: white;
+  border: 1px solid #3768b5;
+}
+
+.pedido-btn-guardar:hover {
+  background: #285395;
+}
+
+@media (max-width: 600px) {
+  .pedido-form {
+    padding: 18px;
+  }
+
+  .pedido-producto-row {
+    flex-wrap: wrap;
+  }
+
+  .pedido-producto-select {
+    width: 100%;
+    flex-basis: 100%;
+  }
+
+  .pedido-cantidad {
+    flex: 1;
+  }
+
+  .pedido-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .pedido-form-actions button {
+    width: 100%;
+  }
+}
