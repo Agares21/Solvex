@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import PagoMaquetaForm from "../components/maquetas/PagoMaquetaForm";
 import { EstadoBadge, EstadoProgreso } from "../components/maquetas/EstadoMaqueta.jsx";
 import SelectorEstadoMaqueta from "../components/maquetas/SelectorEstadoMaqueta.jsx";
@@ -32,7 +32,8 @@ function MaquetaDetallePage() {
     }
   }
 
-  const volver = <button className="maqueta-detalle-btn-volver" onClick={() => navigate("/maquetas")}>← Volver a solicitudes</button>;
+  const origen = useLocation().state;
+  const volver = <button className="maqueta-detalle-btn-volver" onClick={() => navigate(origen?.volverA ?? "/maquetas")}>← {origen?.volverTexto ?? "Volver a solicitudes"}</button>;
 
   if (error?.status === 404) return <div className="maqueta-detalle-page"><div className="maqueta-detalle-vacio">
     <h2>Solicitud no encontrada</h2><p>No existe una solicitud con el código {codigoMaqueta(id)}.</p>{volver}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ordersApi } from "../services/sprint3";
 import { claseEstado, codigoPedido, estadoPedido, fecha, money } from "./pedidosFormato";
 import "./PedidoDetallePage.css";
@@ -14,7 +14,8 @@ function PedidoDetallePage() {
     return () => controller.abort();
   }, [id, version]);
 
-  const volver = <button onClick={() => navigate("/orders")} className="pedido-detalle-btn-volver">← Volver a pedidos</button>;
+  const origen = useLocation().state;
+  const volver = <button onClick={() => navigate(origen?.volverA ?? "/orders")} className="pedido-detalle-btn-volver">← {origen?.volverTexto ?? "Volver a pedidos"}</button>;
 
   if (error?.status === 404) return <div className="pedido-detalle-page"><div className="pedido-detalle-no-encontrado">
     <h2>Pedido no encontrado</h2><p>No existe un pedido con el código {codigoPedido(id)}.</p>{volver}

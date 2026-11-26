@@ -20,6 +20,18 @@ Entrada de alta/edición:
 
 `name` es obligatorio (150). Teléfono y correo son opcionales. El historial incluye `customer`, `orders` y `mockups`; cada maqueta contiene `totalPaid` y `pendingBalance`, calculados desde sus pagos.
 
+Respuesta de `GET /api/customers/{id}/history` (HU-10), usada por `frontend/src/pages/ClienteHistorialPage.jsx`. Pedidos y maquetas vienen del más reciente al más antiguo; `status` es el nombre del estado (`Pending/InProgress/Delivered` para pedidos y `Requested/InProgress/Completed/Delivered/Cancelled` para maquetas). Un cliente sin solicitudes devuelve listas vacías; un id inexistente, 404.
+
+```json
+{
+  "customer": {"id":1,"name":"María López","phone":"70000000","email":null},
+  "orders": [{"id":8,"registeredAt":"2026-11-26T14:00:00+00:00","status":"Pending","total":25.00}],
+  "mockups": [{"id":6,"institution":"Colegio San Calixto","type":"Educativa","status":"Completed","requestedAt":"2026-11-26T12:00:00+00:00","deliveryAt":"2026-12-05T20:30:00+00:00","agreedPrice":150.00,"totalPaid":100.00,"pendingBalance":50.00}]
+}
+```
+
+La búsqueda de clientes de la pantalla filtra `GET /api/customers` por nombre, teléfono, correo o código, sin distinguir mayúsculas ni acentos. El criterio de restringir la información por usuario (RBAC) queda pendiente hasta implementar autenticación.
+
 ## Pedidos
 
 | Método | Ruta | Resultado |

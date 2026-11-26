@@ -33,6 +33,34 @@ public sealed class CustomerServiceTests
         Assert.Equal(60m, Assert.Single(history.Mockups).PendingBalance);
         await Assert.ThrowsAsync<CustomerNotFoundException>(() => Service.HistoryAsync(99));
     }
+    [Fact]
+    public async Task History_ListsMostRecentFirstWithStatusNamesUsedByTheFrontend()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var customer = new Customer { Id = 5, Name = "Juan Pérez" };
+        customer.Orders.Add(new Order { Id = 3, CustomerId = 5, RegisteredAt = now.AddDays(-3), Status = OrderStatus.Delivered, Total = 10m });
+        customer.Orders.Add(new Order { Id = 8, CustomerId = 5, RegisteredAt = now, Status = OrderStatus.Pending, Total = 25m });
+        customer.Mockups.Add(new Mockup { Id = 2, CustomerId = 5, Institution = "Colegio", Type = "Escolar", Size = "Pequeña", DeliveryAt = now.AddDays(5), RequestedAt = now.AddDays(-2), StatusUpdatedAt = now, AgreedPrice = 90m, Status = MockupStatus.Cancelled });
+        customer.Mockups.Add(new Mockup { Id = 6, CustomerId = 5, Institution = "Unidad Educativa", Type = "Educativa", Size = "Grande", DeliveryAt = now.AddDays(9), RequestedAt = now, StatusUpdatedAt = now, AgreedPrice = 150m, Status = MockupStatus.Delivered, Payments = [new() { Amount = 150m }] });
+        repository.History = customer;
+
+        var history = await Service.HistoryAsync(5);
+
+        Assert.Equal([8, 3], history.Orders.Select(o => o.Id));
+        Assert.Equal(["Pending", "Delivered"], history.Orders.Select(o => o.Status));
+        Assert.Equal([6, 2], history.Mockups.Select(m => m.Id));
+        Assert.Equal(["Delivered", "Cancelled"], history.Mockups.Select(m => m.Status));
+        Assert.Equal(0m, history.Mockups[0].PendingBalance);
+    }
+    [Fact]
+    public async Task History_CustomerWithoutRequestsReturnsEmptyLists()
+    {
+        repository.History = new Customer { Id = 9, Name = "Cliente nuevo", Phone = "71111111" };
+        var history = await Service.HistoryAsync(9);
+        Assert.Equal("71111111", history.Customer.Phone);
+        Assert.Empty(history.Orders);
+        Assert.Empty(history.Mockups);
+    }
     private sealed class FakeCustomers : ICustomerRepository
     {
         public List<Customer> Items { get; } = [];

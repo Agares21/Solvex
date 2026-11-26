@@ -35,6 +35,8 @@ function ClienteHistorialPage() {
   // Una maqueta cancelada ya no se cobra: su saldo no cuenta como pendiente.
   const saldoMaquetas = mockups.filter(m => m.status !== "Cancelled").reduce((suma, m) => suma + Number(m.pendingBalance), 0);
   const sinSolicitudes = orders.length === 0 && mockups.length === 0;
+  // Al abrir un pedido o una maqueta desde aquí, su botón «Volver» regresa a este historial.
+  const desdeHistorial = { volverA: `/customers/${customer.id}`, volverTexto: `Volver al historial de ${customer.name}` };
 
   return <div className="cliente-historial">
     {volver}
@@ -71,7 +73,7 @@ function ClienteHistorialPage() {
             ? <div className="table-scroll"><table>
               <thead><tr><th>Código</th><th>Fecha</th><th>Estado</th><th>Total</th></tr></thead>
               <tbody>{orders.map(o => <tr key={o.id}>
-                <td><Link to={`/orders/${o.id}`} className="cliente-enlace">{codigoPedido(o.id)}</Link></td>
+                <td><Link to={`/orders/${o.id}`} state={desdeHistorial} className="cliente-enlace">{codigoPedido(o.id)}</Link></td>
                 <td>{fecha(o.registeredAt)}</td>
                 <td><span className={claseEstado(o.status)}>{estadoPedido(o.status)}</span></td>
                 <td><strong>{money(o.total)}</strong></td>
@@ -86,7 +88,7 @@ function ClienteHistorialPage() {
             ? <div className="table-scroll"><table>
               <thead><tr><th>Código</th><th>Institución</th><th>Tipo</th><th>Entrega</th><th>Estado</th><th>Saldo</th></tr></thead>
               <tbody>{mockups.map(m => <tr key={m.id}>
-                <td><Link to={`/maquetas/${m.id}`} className="cliente-enlace">{codigoMaqueta(m.id)}</Link></td>
+                <td><Link to={`/maquetas/${m.id}`} state={desdeHistorial} className="cliente-enlace">{codigoMaqueta(m.id)}</Link></td>
                 <td>{m.institution}</td>
                 <td>{m.type}</td>
                 <td>{fechaEntrega(m.deliveryAt)}<br /><small>{horaEntrega(m.deliveryAt)}</small></td>
