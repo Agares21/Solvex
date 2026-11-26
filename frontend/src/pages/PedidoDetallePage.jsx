@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ordersApi } from "../services/sprint3";
 import { claseEstado, codigoPedido, estadoPedido, fecha, money } from "./pedidosFormato";
 import "./PedidoDetallePage.css";
@@ -40,7 +40,7 @@ function PedidoDetallePage() {
       <section className="pedido-detalle-card"><h2>Información general</h2>
         <div className="pedido-detalle-info">
           <div><span>Código del pedido</span><strong>{codigoPedido(pedido.id)}</strong></div>
-          <div><span>Cliente</span><strong>{pedido.customerName}</strong></div>
+          <div><span>Cliente</span><strong><Link to={`/customers/${pedido.customerId}`} title="Ver historial del cliente">{pedido.customerName}</Link></strong></div>
           <div><span>Fecha de registro</span><strong>{fecha(pedido.registeredAt)}</strong></div>
           <div><span>Estado actual</span><strong>{estado}</strong></div>
         </div>

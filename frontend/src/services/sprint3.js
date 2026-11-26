@@ -2,7 +2,10 @@ import { request } from './http';
 
 export const customersApi = {
   list: (signal) => request('/customers', { signal }),
+  get: (id, signal) => request(`/customers/${id}`, { signal }),
   create: (input) => request('/customers', { method: 'POST', body: JSON.stringify(input) }),
+  /** Datos del cliente con sus pedidos y maquetas (HU-10). */
+  history: (id, signal) => request(`/customers/${id}/history`, { signal }),
 };
 
 export const ordersApi = {

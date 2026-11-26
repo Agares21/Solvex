@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import PagoMaquetaForm from "../components/maquetas/PagoMaquetaForm";
 import { EstadoBadge, EstadoProgreso } from "../components/maquetas/EstadoMaqueta.jsx";
 import SelectorEstadoMaqueta from "../components/maquetas/SelectorEstadoMaqueta.jsx";
@@ -63,7 +63,7 @@ function MaquetaDetallePage() {
       <section className="maqueta-detalle-card"><h2>Información general</h2>
         <div className="maqueta-detalle-info">
           <div><span>Código de solicitud</span><strong>{codigoMaqueta(solicitud.id)}</strong></div>
-          <div><span>Cliente</span><strong>{solicitud.customerName}</strong></div>
+          <div><span>Cliente</span><strong><Link to={`/customers/${solicitud.customerId}`} title="Ver historial del cliente">{solicitud.customerName}</Link></strong></div>
           <div><span>Institución</span><strong>{solicitud.institution}</strong></div>
           <div><span>Fecha de registro</span><strong>{new Date(solicitud.requestedAt).toLocaleDateString("es-BO")}</strong></div>
         </div>
