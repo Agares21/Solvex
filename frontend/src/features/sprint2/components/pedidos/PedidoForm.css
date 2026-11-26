@@ -216,3 +216,64 @@
     width: 100%;
   }
 }
+
+/* Integración con la API: cliente, errores y estado de guardado */
+
+.pedido-form fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.pedido-form-group label {
+  margin: 0;
+}
+
+.pedido-form-group input,
+.pedido-form-group select,
+.pedido-form-group textarea {
+  margin: 0;
+  background: #fffdf9;
+}
+
+.pedido-cliente-nuevo {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+  padding: 15px 15px 0;
+  margin-bottom: 18px;
+  background: #fff8e9;
+  border: 1px dashed #f1d9a3;
+  border-radius: 10px;
+  animation: ep-fade-down 0.3s ease backwards;
+}
+
+.pedido-total small {
+  color: #8490a0;
+  font-size: 11px;
+}
+
+.pedido-form-error {
+  margin: 0 0 4px;
+  padding: 13px 15px;
+  border: 1px solid #f3c5c0;
+  border-radius: 10px;
+  background: #fdecea;
+  color: #a8322b;
+  font-size: 14px;
+  animation: ep-fade-down 0.3s ease backwards;
+}
+
+.pedido-btn-agregar:disabled,
+.pedido-btn-guardar:disabled,
+.pedido-btn-cancelar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .pedido-cliente-nuevo {
+    grid-template-columns: 1fr;
+  }
+}

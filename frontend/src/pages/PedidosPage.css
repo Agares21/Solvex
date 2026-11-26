@@ -233,3 +233,39 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Integración con la API: filtros, reintento y botón deshabilitado */
+
+.pedidos-filtros {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pedidos-filtros .pedidos-busqueda {
+  margin: 0;
+}
+
+.pedidos-estado-filtro {
+  width: auto;
+  min-width: 170px;
+  background: #fffdf9;
+}
+
+.pedidos-reintentar {
+  margin-left: 10px;
+  padding: 6px 12px;
+}
+
+.pedidos-btn-nuevo:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 600px) {
+  .pedidos-filtros,
+  .pedidos-filtros .pedidos-busqueda {
+    width: 100%;
+  }
+}

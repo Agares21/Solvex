@@ -1,201 +1,176 @@
-
 import { useState } from "react";
 import "./PedidoForm.css";
 
-function PedidoForm({ productosDisponibles, onGuardar, onCancelar }) {
-  const [cliente, setCliente] = useState("");
-  const [productos, setProductos] = useState([]);
+const NUEVO = "nuevo";
+const MAX_CANTIDAD = 1000000;
+const normalizar = texto => texto.trim().toLocaleLowerCase("es");
+
+/**
+ * Formulario de registro de pedidos conectado a la API.
+ * - El cliente se elige de los registrados o se crea uno nuevo (una sola vez, aunque el pedido falle).
+ * - Los productos salen del catálogo activo y no se pueden repetir.
+ * - Los errores del servidor se muestran sin perder lo escrito.
+ */
+function PedidoForm({ clientes, productosDisponibles, onCrearCliente, onGuardar, onCancelar }) {
+  const [clienteId, setClienteId] = useState(clientes.length ? "" : NUEVO);
+  const [nuevoCliente, setNuevoCliente] = useState({ name: "", phone: "" });
+  const [lineas, setLineas] = useState([]);
+  const [siguiente, setSiguiente] = useState(0);
   const [observaciones, setObservaciones] = useState("");
+  const [error, setError] = useState("");
+  const [guardando, setGuardando] = useState(false);
 
-  const agregarProducto = () => {
-    setProductos([
-      ...productos,
-      { productoId: "", cantidad: 1 },
-    ]);
-  };
+  const cambiar = setter => valor => { setter(valor); setError(""); };
+  const agregarProducto = () => { setLineas(actual => [...actual, { key: siguiente, productoId: "", cantidad: "1" }]); setSiguiente(k => k + 1); setError(""); };
+  const actualizarLinea = (key, campo, valor) => { setLineas(actual => actual.map(l => (l.key === key ? { ...l, [campo]: valor } : l))); setError(""); };
+  const quitarLinea = key => setLineas(actual => actual.filter(l => l.key !== key));
 
-  const actualizarProducto = (index, campo, valor) => {
-    const nuevosProductos = [...productos];
+  const totalEstimado = lineas.reduce((total, linea) => {
+    const producto = productosDisponibles.find(p => p.id === Number(linea.productoId));
+    return total + (producto ? producto.price * (Number(linea.cantidad) || 0) : 0);
+  }, 0);
 
-    nuevosProductos[index][campo] = valor;
+  function validar() {
+    if (clienteId === "") return "Selecciona un cliente o registra uno nuevo.";
+    if (clienteId === NUEVO) {
+      if (!nuevoCliente.name.trim()) return "Ingresa el nombre del cliente nuevo.";
+      const repetido = clientes.find(c => normalizar(c.name) === normalizar(nuevoCliente.name));
+      if (repetido) return `Ya existe un cliente llamado «${repetido.name}». Selecciónalo en la lista de clientes.`;
+    }
+    if (lineas.length === 0) return "El pedido debe contener al menos un producto.";
+    if (lineas.some(l => !l.productoId)) return "Selecciona el producto de cada fila o quita las filas vacías.";
+    if (lineas.some(l => !/^\d+$/.test(l.cantidad) || Number(l.cantidad) < 1 || Number(l.cantidad) > MAX_CANTIDAD)) {
+      return "Las cantidades deben ser números enteros entre 1 y 1.000.000.";
+    }
+    if (new Set(lineas.map(l => l.productoId)).size !== lineas.length) return "Selecciona cada producto una sola vez.";
+    return "";
+  }
 
-    setProductos(nuevosProductos);
-  };
-
-  const eliminarProducto = (index) => {
-    setProductos(productos.filter((_, i) => i !== index));
-  };
-
-  const calcularTotal = () => {
-    return productos.reduce((total, item) => {
-      const producto = productosDisponibles.find(
-        (p) => p.id === Number(item.productoId)
-      );
-
-      return total + (producto ? producto.price * item.cantidad : 0);
-    }, 0);
-  };
-
-  const handleSubmit = (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
-
-    if (!cliente.trim()) {
-      alert("Debe ingresar el nombre del cliente.");
-      return;
+    if (guardando) return;
+    const problema = validar();
+    if (problema) { setError(problema); return; }
+    setGuardando(true); setError("");
+    try {
+      let customerId = Number(clienteId);
+      if (clienteId === NUEVO) {
+        const creado = await onCrearCliente({ name: nuevoCliente.name.trim(), phone: nuevoCliente.phone.trim() || null });
+        customerId = creado.id;
+        // Si el pedido falla después, el reintento usa este cliente y no crea uno duplicado.
+        setClienteId(String(creado.id));
+      }
+      await onGuardar({
+        customerId,
+        observations: observaciones.trim() || null,
+        details: lineas.map(l => ({ productId: Number(l.productoId), quantity: Number(l.cantidad) })),
+      });
+    } catch (err) {
+      setError(err?.message || "No se pudo registrar el pedido. Inténtalo nuevamente.");
+    } finally {
+      setGuardando(false);
     }
-
-    const productosValidos = productos.filter(
-      (p) => p.productoId !== "" && Number(p.cantidad) > 0
-    );
-
-    if (productosValidos.length === 0) {
-      alert("El pedido debe contener al menos un producto.");
-      return;
-    }
-
-    const pedido = {
-      cliente: cliente.trim(),
-      productos: productosValidos.map((item) => {
-        const producto = productosDisponibles.find(
-          (p) => p.id === Number(item.productoId)
-        );
-
-        return {
-          productoId: producto.id,
-          nombre: producto.name,
-          precio: producto.price,
-          cantidad: Number(item.cantidad),
-        };
-      }),
-      observaciones,
-      total: calcularTotal(),
-    };
-
-    onGuardar(pedido);
-  };
+  }
 
   return (
     <div className="pedido-form-container">
-      <form className="pedido-form" onSubmit={handleSubmit}>
+      <form className="pedido-form" onSubmit={handleSubmit} noValidate>
         <div className="pedido-form-header">
           <h2>Registrar nuevo pedido</h2>
-          <p>Complete la información solicitada</p>
+          <p>Elige al cliente y los productos que solicita.</p>
         </div>
 
-        <div className="pedido-form-group">
-          <label htmlFor="cliente">Nombre del cliente *</label>
+        <fieldset disabled={guardando}>
+          <legend className="sr-only">Datos del pedido</legend>
 
-          <input
-            id="cliente"
-            type="text"
-            placeholder="Ingrese el nombre del cliente"
-            value={cliente}
-            onChange={(e) => setCliente(e.target.value)}
-          />
-        </div>
-
-        <div className="pedido-productos-header">
-          <h3>Productos del pedido</h3>
-
-          <button
-            type="button"
-            className="pedido-btn-agregar"
-            onClick={agregarProducto}
-          >
-            + Agregar producto
-          </button>
-        </div>
-
-        {productos.length === 0 && (
-          <div className="pedido-productos-vacio">
-            <p>Aún no se agregaron productos.</p>
-            <p>Presione "Agregar producto" para comenzar.</p>
+          <div className="pedido-form-group">
+            <label htmlFor="pedido-cliente">Cliente *</label>
+            <select id="pedido-cliente" value={clienteId} onChange={e => cambiar(setClienteId)(e.target.value)}>
+              <option value="">Selecciona un cliente</option>
+              {clientes.map(c => <option key={c.id} value={c.id}>{c.name}{c.phone ? ` · ${c.phone}` : ""}</option>)}
+              <option value={NUEVO}>+ Registrar cliente nuevo</option>
+            </select>
           </div>
-        )}
 
-        {productos.map((item, index) => (
-          <div className="pedido-producto-row" key={index}>
-            <div className="pedido-form-group pedido-producto-select">
-              <label>Producto</label>
-
-              <select
-                value={item.productoId}
-                onChange={(e) =>
-                  actualizarProducto(
-                    index,
-                    "productoId",
-                    e.target.value
-                  )
-                }
-              >
-                <option value="">Seleccione un producto</option>
-
-                {productosDisponibles.map((producto) => (
-                  <option key={producto.id} value={producto.id}>
-                  {producto.name} - Bs. {producto.price}
-                  </option>
-                ))}
-              </select>
+          {clienteId === NUEVO && (
+            <div className="pedido-cliente-nuevo">
+              <div className="pedido-form-group">
+                <label htmlFor="pedido-cliente-nombre">Nombre del cliente nuevo *</label>
+                <input id="pedido-cliente-nombre" type="text" maxLength={150} placeholder="Ej.: María López" value={nuevoCliente.name}
+                  onChange={e => cambiar(setNuevoCliente)({ ...nuevoCliente, name: e.target.value })} />
+              </div>
+              <div className="pedido-form-group">
+                <label htmlFor="pedido-cliente-telefono">Teléfono</label>
+                <input id="pedido-cliente-telefono" type="tel" maxLength={40} placeholder="Opcional" value={nuevoCliente.phone}
+                  onChange={e => cambiar(setNuevoCliente)({ ...nuevoCliente, phone: e.target.value })} />
+              </div>
             </div>
+          )}
 
-            <div className="pedido-form-group pedido-cantidad">
-              <label>Cantidad</label>
-
-              <input
-                type="number"
-                min="1"
-                value={item.cantidad}
-                onChange={(e) =>
-                  actualizarProducto(
-                    index,
-                    "cantidad",
-                    Number(e.target.value)
-                  )
-                }
-              />
-            </div>
-
-            <button
-              type="button"
-              className="pedido-btn-eliminar"
-              onClick={() => eliminarProducto(index)}
-              title="Eliminar producto"
-            >
-              ×
+          <div className="pedido-productos-header">
+            <h3>Productos del pedido</h3>
+            <button type="button" className="pedido-btn-agregar" onClick={agregarProducto}
+              disabled={!productosDisponibles.length || lineas.length >= Math.min(100, productosDisponibles.length)}>
+              + Agregar producto
             </button>
           </div>
-        ))}
 
-        <div className="pedido-form-group">
-          <label htmlFor="observaciones">Observaciones</label>
+          {!productosDisponibles.length && (
+            <div className="pedido-productos-vacio"><p>No hay productos activos en el catálogo.</p><p>Registra o activa productos para poder tomar pedidos.</p></div>
+          )}
 
-          <textarea
-            id="observaciones"
-            placeholder="Notas adicionales del pedido..."
-            value={observaciones}
-            onChange={(e) => setObservaciones(e.target.value)}
-            rows="3"
-          />
-        </div>
+          {productosDisponibles.length > 0 && lineas.length === 0 && (
+            <div className="pedido-productos-vacio">
+              <p>Aún no se agregaron productos.</p>
+              <p>Presione "Agregar producto" para comenzar.</p>
+            </div>
+          )}
 
-        <div className="pedido-total">
-          <span>Total del pedido</span>
-          <strong>Bs. {calcularTotal().toFixed(2)}</strong>
-        </div>
+          {lineas.map((linea, index) => (
+            <div className="pedido-producto-row" key={linea.key}>
+              <div className="pedido-form-group pedido-producto-select">
+                <label htmlFor={`pedido-producto-${linea.key}`}>Producto {index + 1}</label>
+                <select id={`pedido-producto-${linea.key}`} value={linea.productoId} onChange={e => actualizarLinea(linea.key, "productoId", e.target.value)}>
+                  <option value="">Seleccione un producto</option>
+                  {productosDisponibles.map(p => (
+                    <option key={p.id} value={p.id} disabled={lineas.some(l => l.key !== linea.key && l.productoId === String(p.id))}>
+                      {p.name} - Bs. {Number(p.price).toFixed(2)}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-        <div className="pedido-form-actions">
-          <button
-            type="button"
-            className="pedido-btn-cancelar"
-            onClick={onCancelar}
-          >
-            Cancelar
-          </button>
+              <div className="pedido-form-group pedido-cantidad">
+                <label htmlFor={`pedido-cantidad-${linea.key}`}>Cantidad {index + 1}</label>
+                <input id={`pedido-cantidad-${linea.key}`} type="number" min="1" max={MAX_CANTIDAD} step="1" value={linea.cantidad}
+                  onChange={e => actualizarLinea(linea.key, "cantidad", e.target.value)} />
+              </div>
 
-          <button type="submit" className="pedido-btn-guardar">
-            Registrar pedido
-          </button>
-        </div>
+              <button type="button" className="pedido-btn-eliminar" onClick={() => quitarLinea(linea.key)}
+                aria-label={`Quitar producto ${index + 1}`} title="Quitar producto">
+                ×
+              </button>
+            </div>
+          ))}
+
+          <div className="pedido-form-group">
+            <label htmlFor="pedido-observaciones">Observaciones</label>
+            <textarea id="pedido-observaciones" placeholder="Notas adicionales del pedido..." maxLength={1000} rows="3"
+              value={observaciones} onChange={e => setObservaciones(e.target.value)} />
+          </div>
+
+          <div className="pedido-total">
+            <span>Total estimado <small>(el servidor confirma el importe final)</small></span>
+            <strong>Bs. {totalEstimado.toFixed(2)}</strong>
+          </div>
+
+          {error && <div className="pedido-form-error" role="alert">{error}</div>}
+
+          <div className="pedido-form-actions">
+            <button type="button" className="pedido-btn-cancelar" onClick={onCancelar}>Cancelar</button>
+            <button type="submit" className="pedido-btn-guardar">{guardando ? "Registrando…" : "Registrar pedido"}</button>
+          </div>
+        </fieldset>
       </form>
     </div>
   );

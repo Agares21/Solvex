@@ -174,3 +174,17 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Integración con la API: acciones cuando falla la carga */
+
+.pedido-detalle-acciones {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pedido-detalle-table small {
+  color: #8490a0;
+  font-size: 11px;
+}
