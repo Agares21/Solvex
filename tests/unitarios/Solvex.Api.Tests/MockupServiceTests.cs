@@ -46,6 +46,49 @@ public sealed class MockupServiceTests
         Assert.Equal(MockupStatus.InProgress, started.Status);
         Assert.Equal(MockupStatus.Completed, (await Service.UpdateStatusAsync(created.Id, new() { Status = MockupStatus.Completed })).Status);
     }
+    [Fact]
+    public async Task Status_CompletedJobCanOnlyBeDelivered()
+    {
+        var created = await Service.CreateAsync(Input());
+        await Service.UpdateStatusAsync(created.Id, new() { Status = MockupStatus.InProgress });
+        await Service.UpdateStatusAsync(created.Id, new() { Status = MockupStatus.Completed });
+        await Assert.ThrowsAsync<MockupStatusConflictException>(() => Service.UpdateStatusAsync(created.Id, new() { Status = MockupStatus.Cancelled }));
+        var delivered = await Service.UpdateStatusAsync(created.Id, new() { Status = MockupStatus.Delivered });
+        Assert.Equal(MockupStatus.Delivered, delivered.Status);
+        Assert.Equal(MockupStatus.Delivered, (await Service.GetAsync(created.Id)).Status);
+    }
+    [Theory]
+    [InlineData(MockupStatus.Requested)]
+    [InlineData(MockupStatus.InProgress)]
+    public async Task Status_CanCancelBeforeFinishing(MockupStatus from)
+    {
+        var created = await Service.CreateAsync(Input());
+        if (from == MockupStatus.InProgress) await Service.UpdateStatusAsync(created.Id, new() { Status = MockupStatus.InProgress });
+        var cancelled = await Service.UpdateStatusAsync(created.Id, new() { Status = MockupStatus.Cancelled });
+        Assert.Equal(MockupStatus.Cancelled, cancelled.Status);
+    }
+    [Theory]
+    [InlineData(MockupStatus.Delivered)]
+    [InlineData(MockupStatus.Cancelled)]
+    public async Task Status_FinalStatesCannotChange(MockupStatus final)
+    {
+        var created = await Service.CreateAsync(Input());
+        if (final == MockupStatus.Delivered)
+        {
+            await Service.UpdateStatusAsync(created.Id, new() { Status = MockupStatus.InProgress });
+            await Service.UpdateStatusAsync(created.Id, new() { Status = MockupStatus.Completed });
+        }
+        await Service.UpdateStatusAsync(created.Id, new() { Status = final });
+        foreach (var next in Enum.GetValues<MockupStatus>())
+            await Assert.ThrowsAsync<MockupStatusConflictException>(() => Service.UpdateStatusAsync(created.Id, new() { Status = next }));
+    }
+    [Fact]
+    public async Task Status_RejectsUndefinedValue()
+    {
+        var created = await Service.CreateAsync(Input());
+        await Assert.ThrowsAsync<ValidationException>(() => Service.UpdateStatusAsync(created.Id, new() { Status = (MockupStatus)99 }));
+        Assert.Equal(MockupStatus.Requested, (await Service.GetAsync(created.Id)).Status);
+    }
     private sealed class FakeMockups : IMockupRepository
     {
         public List<Mockup> Items { get; } = [];

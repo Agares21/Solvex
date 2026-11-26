@@ -1,8 +1,8 @@
 // Formato y estados compartidos por el listado y el detalle de solicitudes de maquetas (HU-07 y HU-09).
 
 /**
- * Estados definidos para una maqueta (HU-09). La clave es el valor que viaja en la API; ningún otro valor se ofrece ni se envía.
- * `Delivered` y `Cancelled` necesitan que el backend los agregue: mientras no existan, el servidor rechaza el cambio y la pantalla lo informa.
+ * Estados definidos para una maqueta (HU-09). La clave es el valor que viaja en la API (`MockupStatus` del backend);
+ * ningún otro valor se ofrece ni se envía. Las transiciones de abajo son las mismas que valida `MockupService.IsAllowed`.
  */
 export const ESTADOS_MAQUETA = {
   Requested: "Pendiente",

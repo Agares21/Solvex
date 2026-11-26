@@ -59,7 +59,10 @@ public sealed class MockupService(IMockupRepository repository) : IMockupService
     private static bool IsAllowed(MockupStatus current, MockupStatus next) => (current, next) switch
     {
         (MockupStatus.Requested, MockupStatus.InProgress) => true,
+        (MockupStatus.Requested, MockupStatus.Cancelled) => true,
         (MockupStatus.InProgress, MockupStatus.Completed) => true,
+        (MockupStatus.InProgress, MockupStatus.Cancelled) => true,
+        (MockupStatus.Completed, MockupStatus.Delivered) => true,
         _ => false
     };
     private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();

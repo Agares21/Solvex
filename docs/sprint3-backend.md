@@ -5,7 +5,7 @@
 - SCRUM-17 / HU-05: clientes, pedidos y detalles de pedido.
 - SCRUM-43 / HU-07: solicitudes de maquetas vinculadas a cliente.
 - SCRUM-45 / HU-08: precio acordado, anticipos/pagos, total pagado y saldo calculado.
-- SCRUM-46 / HU-09: estados `Requested`, `InProgress` y `Completed` con transición hacia adelante.
+- SCRUM-46 / HU-09: estados `Requested`, `InProgress`, `Completed`, `Delivered` y `Cancelled`; avance hacia adelante, cancelación solo antes de terminar y estados finales `Delivered`/`Cancelled`.
 - SCRUM-47 / HU-10: historial de pedidos y maquetas por cliente.
 
 ## Decisiones por información no especificada

@@ -152,7 +152,7 @@ namespace Solvex.Api.Data.Migrations
                         {
                             t.HasCheckConstraint("CK_Mockups_AgreedPrice", "[AgreedPrice] > 0");
 
-                            t.HasCheckConstraint("CK_Mockups_Status", "[Status] IN ('Requested', 'InProgress', 'Completed')");
+                            t.HasCheckConstraint("CK_Mockups_Status", "[Status] IN ('Requested', 'InProgress', 'Completed', 'Delivered', 'Cancelled')");
                         });
                 });
 

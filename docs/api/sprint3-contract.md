@@ -75,7 +75,7 @@ Estado:
 {"status":"InProgress"}
 ```
 
-El precio acordado y los pagos usan `decimal(10,2)`. Los pagos deben ser mayores que cero, de máximo dos decimales y no pueden superar el saldo pendiente. `pendingBalance` no se persiste: es `agreedPrice - sum(payments.amount)`. Las transiciones mínimas permitidas son `Requested → InProgress → Completed`; cualquier otra devuelve 409.
+El precio acordado y los pagos usan `decimal(10,2)`. Los pagos deben ser mayores que cero, de máximo dos decimales y no pueden superar el saldo pendiente. `pendingBalance` no se persiste: es `agreedPrice - sum(payments.amount)`. Estados definidos (HU-09): `Requested` (pendiente), `InProgress` (en proceso), `Completed` (terminada), `Delivered` (entregada) y `Cancelled` (cancelada). Transiciones permitidas: `Requested → InProgress | Cancelled`, `InProgress → Completed | Cancelled` y `Completed → Delivered`; `Delivered` y `Cancelled` son finales. Cualquier otra transición devuelve 409 sin cambiar el registro; un valor no definido devuelve 400. Cada cambio actualiza `statusUpdatedAt`.
 
 ## Integración pendiente del frontend existente
 
@@ -86,6 +86,6 @@ Los componentes actuales de `Tpg_front` usan estado local y datos de demostraci�
 3. Enviar `details` y no `productos`; el total y precios de respuesta son autoridad del servidor.
 4. Enviar `deliveryAt` ISO-8601 uniendo `fechaEntrega` y `horaEntrega`.
 5. Enviar `agreedPrice`, requerido para anticipos y saldo.
-6. Convertir estados visuales: `Requested/ InProgress/ Completed` a las etiquetas `Pendiente/En proceso/Completada` si se desea mantener el texto en español.
+6. Convertir estados visuales: `Requested/ InProgress/ Completed/ Delivered/ Cancelled` a las etiquetas `Pendiente/En proceso/Terminada/Entregada/Cancelada` (implementado en `frontend/src/pages/maquetasFormato.js`).
 
 Los códigos visuales `PED-001` y `MAQ-001` no son claves de API: la API devuelve `id` entero; la interfaz puede formatearlo para presentación.

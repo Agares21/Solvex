@@ -1,6 +1,6 @@
 namespace Solvex.Api.Entities;
 
-public enum MockupStatus { Requested = 1, InProgress = 2, Completed = 3 }
+public enum MockupStatus { Requested = 1, InProgress = 2, Completed = 3, Delivered = 4, Cancelled = 5 }
 
 public sealed class Mockup
 {

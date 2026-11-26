@@ -9,6 +9,7 @@ Se utiliza el contexto existente `SolvexDbContext` y la misma cadena `Connection
 | 20261110121023_Sprint2SuppliersAndPurchases | Suppliers, Purchases y PurchaseDetails; referencia opcional PurchaseDetailId en movimientos existentes; índices y restricciones |
 | 20261113173508_UniqueProductNames | NormalizedName calculado persistido e índice único; exige resolver nombres duplicados antes de aplicar |
 | 20261124180808_Sprint3CustomersOrdersMockups | Clientes, pedidos, detalles, maquetas y pagos; no aplicada automáticamente |
+| 20261126222746_MockupDeliveredAndCancelledStatuses | HU-09: amplía `CK_Mockups_Status` con `Delivered` y `Cancelled`; no modifica datos existentes |
 
 La migración del Sprint 2 es aditiva: no cambia precios, saldos ni detalles de productos anteriores. Todos los movimientos anteriores mantienen PurchaseDetailId null. El índice único filtrado aplica solo cuando esa referencia está informada. Las relaciones usan `Restrict`, sin eliminaciones en cascada.
 

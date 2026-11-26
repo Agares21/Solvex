@@ -116,7 +116,7 @@ public sealed class SolvexDbContext(DbContextOptions<SolvexDbContext> options) :
         var mockup = modelBuilder.Entity<Mockup>();
         mockup.ToTable("Mockups", table => {
             table.HasCheckConstraint("CK_Mockups_AgreedPrice", "[AgreedPrice] > 0");
-            table.HasCheckConstraint("CK_Mockups_Status", "[Status] IN ('Requested', 'InProgress', 'Completed')");
+            table.HasCheckConstraint("CK_Mockups_Status", "[Status] IN ('Requested', 'InProgress', 'Completed', 'Delivered', 'Cancelled')");
         });
         mockup.HasKey(m => m.Id);
         mockup.Property(m => m.Institution).HasMaxLength(150).IsRequired();
