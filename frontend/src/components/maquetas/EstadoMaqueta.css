@@ -1,0 +1,246 @@
+/* =====================================
+   ESTADOS DE MAQUETAS (HU-09)
+===================================== */
+
+/* Etiquetas de estado: color + ícono, para no depender solo del color */
+
+.maqueta-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.maqueta-estado::before {
+  content: attr(data-icono);
+  content: attr(data-icono) / "";
+  font-size: 11px;
+}
+
+.maqueta-estado.maqueta-estado-pendiente { background: #fff3cd; border-color: #f5dc8b; color: #8a5a00; }
+.maqueta-estado.maqueta-estado-en-proceso { background: #e2edfc; border-color: #bcd3f5; color: #1f4f8f; }
+.maqueta-estado.maqueta-estado-terminada { background: #e4f4e9; border-color: #b9dfc4; color: #256b3e; }
+.maqueta-estado.maqueta-estado-entregada { background: #243b5a; border-color: #243b5a; color: #fff; }
+.maqueta-estado.maqueta-estado-cancelada { background: #f2efea; border-color: #ddd6cb; color: #7b7770; text-decoration: line-through; }
+
+/* Barra de avance del trabajo */
+
+.maqueta-progreso {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 4px 0 22px;
+  padding: 0;
+  list-style: none;
+}
+
+.maqueta-paso {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  animation: ep-fade-up 0.45s var(--ease-out) backwards;
+}
+
+.maqueta-paso:nth-child(2) { animation-delay: 0.08s; }
+.maqueta-paso:nth-child(3) { animation-delay: 0.16s; }
+.maqueta-paso:nth-child(4) { animation-delay: 0.24s; }
+
+/* Línea que une cada paso con el anterior */
+.maqueta-paso + .maqueta-paso::before {
+  content: "";
+  position: absolute;
+  top: 17px;
+  right: 50%;
+  width: 100%;
+  height: 4px;
+  border-radius: 4px;
+  background: #ece7dd;
+  z-index: 0;
+}
+
+.maqueta-paso-hecho + .maqueta-paso::before,
+.maqueta-paso-hecho + .maqueta-paso-hecho::before { background: #7fbf95; }
+
+.maqueta-paso-punto {
+  position: relative;
+  z-index: 1;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 3px solid #ece7dd;
+  border-radius: 50%;
+  background: #fff;
+  color: #9a958c;
+  font-size: 14px;
+  font-weight: 800;
+  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.maqueta-paso-nombre {
+  color: #8a867e;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.maqueta-paso-hecho .maqueta-paso-punto { background: #e4f4e9; border-color: #7fbf95; color: #256b3e; }
+.maqueta-paso-hecho .maqueta-paso-nombre { color: #256b3e; }
+
+.maqueta-paso-actual .maqueta-paso-punto {
+  background: var(--yellow, #f5c542);
+  border-color: var(--navy, #243b5a);
+  color: var(--navy, #243b5a);
+  animation: maqueta-pulso 2s ease-in-out infinite;
+}
+
+.maqueta-paso-actual .maqueta-paso-nombre { color: var(--navy, #243b5a); font-weight: 800; }
+
+.maqueta-progreso.is-cancelada .maqueta-paso { opacity: 0.45; }
+
+@keyframes maqueta-pulso {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 197, 66, 0.55); }
+  50% { box-shadow: 0 0 0 9px rgba(245, 197, 66, 0); }
+}
+
+/* Selector de estado */
+
+.maqueta-estado-card .maqueta-estado-resumen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin-bottom: 20px;
+  color: #7b8494;
+  font-size: 13px;
+}
+
+.maqueta-selector-estado fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.maqueta-selector-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+}
+
+.maqueta-selector-fila label {
+  margin: 0;
+  color: #344054;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.maqueta-selector-fila select {
+  width: auto;
+  min-width: 230px;
+  margin: 0;
+  padding: 10px 12px;
+}
+
+.maqueta-selector-ayuda {
+  margin: 10px 0 0;
+  color: #8a867e;
+  font-size: 12px;
+}
+
+.maqueta-estado-guardar { padding: 10px 18px; }
+
+.maqueta-estado-confirmar {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid #f3c5c0;
+  border-radius: 10px;
+  background: #fdecea;
+  color: #a8322b;
+  font-size: 14px;
+  animation: ep-fade-down 0.3s ease backwards;
+}
+
+.maqueta-estado-confirmar p { margin: 0 0 12px; }
+
+.maqueta-estado-confirmar-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.maqueta-estado-cancelar { background: var(--red, #d94b43); }
+.maqueta-estado-cancelar:hover { background: var(--red-dark, #b93832); }
+
+.maqueta-estado-final {
+  margin: 0;
+  padding: 13px 15px;
+  border-radius: 10px;
+  background: #f6f3ee;
+  color: #6f6f68;
+  font-size: 14px;
+}
+
+.maqueta-estado-mensaje {
+  margin: 0 0 14px;
+  padding: 12px 15px;
+  border-radius: 10px;
+  font-size: 14px;
+  animation: ep-fade-down 0.3s ease backwards;
+}
+
+.maqueta-estado-mensaje.exito { background: #e4f4e9; border: 1px solid #c3e3cc; color: #256b3e; }
+.maqueta-estado-mensaje.error { margin: 14px 0 0; background: #fdecea; border: 1px solid #f3c5c0; color: #a8322b; }
+
+/* Tarjetas de resumen por estado (sirven de filtro) */
+
+.maqueta-stat-card.es-filtro {
+  position: relative;
+  overflow: hidden;
+  align-items: flex-start;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.maqueta-stat-card.es-filtro::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: var(--tono, #c9c3b8);
+}
+
+.maqueta-stat-card.es-filtro:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 22px rgba(36, 59, 90, 0.08);
+  background: #fff;
+}
+
+.maqueta-stat-card.es-filtro[aria-pressed="true"] {
+  border-color: var(--tono, #243b5a);
+  box-shadow: 0 0 0 2px var(--tono, #243b5a);
+}
+
+.maqueta-stat-card.es-filtro span,
+.maqueta-stat-card.es-filtro strong { color: inherit; }
+.maqueta-stat-card.es-filtro span { color: #7b8494; }
+.maqueta-stat-card.es-filtro strong { color: #243247; }
+
+@media (max-width: 600px) {
+  .maqueta-paso-nombre { font-size: 10px; }
+  .maqueta-paso-punto { width: 32px; height: 32px; }
+  .maqueta-paso + .maqueta-paso::before { top: 14px; }
+  .maqueta-selector-fila select { width: 100%; min-width: 0; }
+}

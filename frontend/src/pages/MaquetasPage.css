@@ -301,3 +301,26 @@
 .maqueta-codigo {
   white-space: nowrap;
 }
+
+/* HU-09: seis tarjetas (total + cinco estados) que también filtran la tabla */
+.maquetas-stats {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.maquetas-stats .maqueta-stat-card {
+  justify-content: flex-start;
+  padding: 18px;
+}
+
+.maquetas-stats .maqueta-stat-card span {
+  font-size: 13px;
+}
+
+@media (max-width: 1200px) {
+  .maquetas-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  .maquetas-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

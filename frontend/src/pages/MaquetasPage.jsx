@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Dialog from "../features/sprint2/components/Dialog.jsx";
 import MaquetaForm from "../components/maquetas/MaquetaForm";
+import { EstadoBadge } from "../components/maquetas/EstadoMaqueta.jsx";
 import { customersApi, mockupsApi } from "../services/sprint3";
-import { ESTADOS_MAQUETA, alertaEntrega, claseEstadoMaqueta, codigoMaqueta, estadoMaqueta, fechaEntrega, horaEntrega } from "./maquetasFormato";
+import { ESTADOS_MAQUETA, alertaEntrega, codigoMaqueta, fechaEntrega, horaEntrega } from "./maquetasFormato";
 import "./MaquetasPage.css";
+
+const TONO_TARJETA = { Todos: "#c9c3b8", Requested: "#f5c542", InProgress: "#315b91", Completed: "#4f9d69", Delivered: "#243b5a", Cancelled: "#b3aca2" };
 
 function MaquetasPage() {
   const navigate = useNavigate();
@@ -59,9 +62,12 @@ function MaquetasPage() {
     {mensaje && <p className="notice success" role="status">{mensaje}</p>}
     {error && <div className="notice error" role="alert">{error} <button className="secondary maquetas-reintentar" onClick={() => setVersion(v => v + 1)}>Reintentar</button></div>}
 
-    <div className="maquetas-stats">
-      {[["Total de solicitudes", solicitudes.length], ["Pendientes", contar("Requested")], ["En proceso", contar("InProgress")], ["Completadas", contar("Completed")]]
-        .map(([label, value]) => <div className="maqueta-stat-card" key={label}><span>{label}</span><strong>{stat(value)}</strong></div>)}
+    <div className="maquetas-stats" role="group" aria-label="Solicitudes por estado (pulsa una tarjeta para filtrar)">
+      {[["Todos", "Total de solicitudes", solicitudes.length], ...Object.entries(ESTADOS_MAQUETA).map(([valor, etiqueta]) => [valor, etiqueta, contar(valor)])]
+        .map(([valor, label, value]) => <button type="button" key={valor} className="maqueta-stat-card es-filtro" aria-pressed={estado === valor}
+          style={{ "--tono": TONO_TARJETA[valor] }} onClick={() => setEstado(valor)}>
+          <span>{label}</span><strong>{stat(value)}</strong>
+        </button>)}
     </div>
 
     <div className="maquetas-listado">
@@ -92,7 +98,7 @@ function MaquetasPage() {
                   <td>{s.institution}</td>
                   <td>{s.type}<br /><small>{s.size}</small></td>
                   <td>{fechaEntrega(s.deliveryAt)}<br /><small>{horaEntrega(s.deliveryAt)}</small>{alerta && <span className={`maqueta-alerta ${alerta.clase}`}>{alerta.texto}</span>}</td>
-                  <td><span className={claseEstadoMaqueta(s.status)}>{estadoMaqueta(s.status)}</span></td>
+                  <td><EstadoBadge status={s.status} /></td>
                   <td><button className="maqueta-btn-ver" aria-label={`Ver solicitud ${codigoMaqueta(s.id)}`} onClick={() => navigate(`/maquetas/${s.id}`)}>Ver</button></td>
                 </tr>;
               })}

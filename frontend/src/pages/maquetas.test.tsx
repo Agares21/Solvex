@@ -8,7 +8,7 @@ import MaquetaDetallePage from './MaquetaDetallePage';
 import { alertaEntrega } from './maquetasFormato';
 import { customersApi, mockupsApi } from '../services/sprint3';
 import { ApiError } from '../services/http';
-vi.mock('../services/sprint3', () => ({ customersApi: { list: vi.fn(), create: vi.fn() }, mockupsApi: { list: vi.fn(), get: vi.fn(), create: vi.fn(), pay: vi.fn() } }));
+vi.mock('../services/sprint3', () => ({ customersApi: { list: vi.fn(), create: vi.fn() }, mockupsApi: { list: vi.fn(), get: vi.fn(), create: vi.fn(), pay: vi.fn(), updateStatus: vi.fn() } }));
 
 const anio = new Date().getFullYear() + 1;
 const clientes = [{ id: 1, name: 'María López', phone: '70000000', email: null }];
@@ -136,11 +136,13 @@ describe('Detalle y avisos de entrega', () => {
     expect(await screen.findByText('Solicitud no encontrada')).toBeDefined();
   });
 
-  it('marca trabajos atrasados o por vencer, salvo los completados', () => {
+  it('marca trabajos atrasados o por vencer mientras no se entreguen ni se cancelen', () => {
     const ahora = new Date('2026-11-26T12:00:00Z');
     expect(alertaEntrega({ status: 'Requested', deliveryAt: '2026-11-25T12:00:00Z' }, ahora)?.texto).toBe('Atrasada');
     expect(alertaEntrega({ status: 'InProgress', deliveryAt: '2026-11-27T12:00:00Z' }, ahora)?.texto).toBe('Vence pronto');
+    expect(alertaEntrega({ status: 'Completed', deliveryAt: '2026-11-25T12:00:00Z' }, ahora)?.texto).toBe('Atrasada');
     expect(alertaEntrega({ status: 'Requested', deliveryAt: '2026-12-10T12:00:00Z' }, ahora)).toBeNull();
-    expect(alertaEntrega({ status: 'Completed', deliveryAt: '2026-11-25T12:00:00Z' }, ahora)).toBeNull();
+    expect(alertaEntrega({ status: 'Delivered', deliveryAt: '2026-11-25T12:00:00Z' }, ahora)).toBeNull();
+    expect(alertaEntrega({ status: 'Cancelled', deliveryAt: '2026-11-25T12:00:00Z' }, ahora)).toBeNull();
   });
 });

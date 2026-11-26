@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PagoMaquetaForm from "../components/maquetas/PagoMaquetaForm";
+import { EstadoBadge, EstadoProgreso } from "../components/maquetas/EstadoMaqueta.jsx";
+import SelectorEstadoMaqueta from "../components/maquetas/SelectorEstadoMaqueta.jsx";
 import { mockupsApi } from "../services/sprint3";
-import { alertaEntrega, claseEstadoMaqueta, codigoMaqueta, estadoMaqueta, fechaEntrega, horaEntrega } from "./maquetasFormato";
+import { alertaEntrega, codigoMaqueta, fechaEntrega, fechaHora, horaEntrega } from "./maquetasFormato";
 import "./MaquetaDetallePage.css";
 
 const money = value => `Bs ${Number(value).toFixed(2)}`;
@@ -20,6 +22,16 @@ function MaquetaDetallePage() {
 
   async function pay(input) { const updated = await mockupsApi.pay(id, input); setSolicitud(updated); setShowPayment(false); }
 
+  /** Guarda el nuevo estado; si falla, vuelve a consultar para mostrar el estado real guardado y relanza el error. */
+  async function cambiarEstado(status) {
+    try {
+      setSolicitud(await mockupsApi.updateStatus(id, status));
+    } catch (err) {
+      mockupsApi.get(id).then(setSolicitud).catch(() => { /* se conserva lo mostrado; el selector ya informa el error */ });
+      throw err;
+    }
+  }
+
   const volver = <button className="maqueta-detalle-btn-volver" onClick={() => navigate("/maquetas")}>← Volver a solicitudes</button>;
 
   if (error?.status === 404) return <div className="maqueta-detalle-page"><div className="maqueta-detalle-vacio">
@@ -33,13 +45,21 @@ function MaquetaDetallePage() {
 
   if (!solicitud) return <div className="maqueta-detalle-page"><p className="notice" role="status">Cargando solicitud…</p></div>;
 
-  const estado = estadoMaqueta(solicitud.status), alerta = alertaEntrega(solicitud);
+  const alerta = alertaEntrega(solicitud);
   return <div className="maqueta-detalle-page">{volver}
     <div className="maqueta-detalle-header">
       <div><h1>Detalle de solicitud</h1><p>Información completa del trabajo solicitado.</p></div>
-      <span className={claseEstadoMaqueta(solicitud.status)}>{estado}</span>
+      <EstadoBadge status={solicitud.status} />
     </div>
     <div className="maqueta-detalle-grid">
+      <section className="maqueta-detalle-card maqueta-estado-card" aria-labelledby="estado-trabajo"><h2 id="estado-trabajo">Estado del trabajo</h2>
+        <div className="maqueta-estado-resumen">
+          <span>Estado actual: <EstadoBadge status={solicitud.status} /></span>
+          {solicitud.statusUpdatedAt && <span>Última actualización: {fechaHora(solicitud.statusUpdatedAt)}</span>}
+        </div>
+        <EstadoProgreso status={solicitud.status} />
+        <SelectorEstadoMaqueta estado={solicitud.status} onCambiar={cambiarEstado} />
+      </section>
       <section className="maqueta-detalle-card"><h2>Información general</h2>
         <div className="maqueta-detalle-info">
           <div><span>Código de solicitud</span><strong>{codigoMaqueta(solicitud.id)}</strong></div>
