@@ -1,9 +1,9 @@
 import { useState } from "react";
+import ClienteSelector from "../../../../components/clientes/ClienteSelector.jsx";
+import { CLIENTE_NUEVO, resolverCliente, validarCliente } from "../../../../components/clientes/clientes";
 import "./PedidoForm.css";
 
-const NUEVO = "nuevo";
 const MAX_CANTIDAD = 1000000;
-const normalizar = texto => texto.trim().toLocaleLowerCase("es");
 
 /**
  * Formulario de registro de pedidos conectado a la API.
@@ -12,7 +12,7 @@ const normalizar = texto => texto.trim().toLocaleLowerCase("es");
  * - Los errores del servidor se muestran sin perder lo escrito.
  */
 function PedidoForm({ clientes, productosDisponibles, onCrearCliente, onGuardar, onCancelar }) {
-  const [clienteId, setClienteId] = useState(clientes.length ? "" : NUEVO);
+  const [clienteId, setClienteId] = useState(clientes.length ? "" : CLIENTE_NUEVO);
   const [nuevoCliente, setNuevoCliente] = useState({ name: "", phone: "" });
   const [lineas, setLineas] = useState([]);
   const [siguiente, setSiguiente] = useState(0);
@@ -31,12 +31,8 @@ function PedidoForm({ clientes, productosDisponibles, onCrearCliente, onGuardar,
   }, 0);
 
   function validar() {
-    if (clienteId === "") return "Selecciona un cliente o registra uno nuevo.";
-    if (clienteId === NUEVO) {
-      if (!nuevoCliente.name.trim()) return "Ingresa el nombre del cliente nuevo.";
-      const repetido = clientes.find(c => normalizar(c.name) === normalizar(nuevoCliente.name));
-      if (repetido) return `Ya existe un cliente llamado «${repetido.name}». Selecciónalo en la lista de clientes.`;
-    }
+    const problemaCliente = validarCliente(clienteId, nuevoCliente, clientes);
+    if (problemaCliente) return problemaCliente;
     if (lineas.length === 0) return "El pedido debe contener al menos un producto.";
     if (lineas.some(l => !l.productoId)) return "Selecciona el producto de cada fila o quita las filas vacías.";
     if (lineas.some(l => !/^\d+$/.test(l.cantidad) || Number(l.cantidad) < 1 || Number(l.cantidad) > MAX_CANTIDAD)) {
@@ -53,13 +49,7 @@ function PedidoForm({ clientes, productosDisponibles, onCrearCliente, onGuardar,
     if (problema) { setError(problema); return; }
     setGuardando(true); setError("");
     try {
-      let customerId = Number(clienteId);
-      if (clienteId === NUEVO) {
-        const creado = await onCrearCliente({ name: nuevoCliente.name.trim(), phone: nuevoCliente.phone.trim() || null });
-        customerId = creado.id;
-        // Si el pedido falla después, el reintento usa este cliente y no crea uno duplicado.
-        setClienteId(String(creado.id));
-      }
+      const customerId = await resolverCliente(clienteId, nuevoCliente, onCrearCliente, setClienteId);
       await onGuardar({
         customerId,
         observations: observaciones.trim() || null,
@@ -83,29 +73,8 @@ function PedidoForm({ clientes, productosDisponibles, onCrearCliente, onGuardar,
         <fieldset disabled={guardando}>
           <legend className="sr-only">Datos del pedido</legend>
 
-          <div className="pedido-form-group">
-            <label htmlFor="pedido-cliente">Cliente *</label>
-            <select id="pedido-cliente" value={clienteId} onChange={e => cambiar(setClienteId)(e.target.value)}>
-              <option value="">Selecciona un cliente</option>
-              {clientes.map(c => <option key={c.id} value={c.id}>{c.name}{c.phone ? ` · ${c.phone}` : ""}</option>)}
-              <option value={NUEVO}>+ Registrar cliente nuevo</option>
-            </select>
-          </div>
-
-          {clienteId === NUEVO && (
-            <div className="pedido-cliente-nuevo">
-              <div className="pedido-form-group">
-                <label htmlFor="pedido-cliente-nombre">Nombre del cliente nuevo *</label>
-                <input id="pedido-cliente-nombre" type="text" maxLength={150} placeholder="Ej.: María López" value={nuevoCliente.name}
-                  onChange={e => cambiar(setNuevoCliente)({ ...nuevoCliente, name: e.target.value })} />
-              </div>
-              <div className="pedido-form-group">
-                <label htmlFor="pedido-cliente-telefono">Teléfono</label>
-                <input id="pedido-cliente-telefono" type="tel" maxLength={40} placeholder="Opcional" value={nuevoCliente.phone}
-                  onChange={e => cambiar(setNuevoCliente)({ ...nuevoCliente, phone: e.target.value })} />
-              </div>
-            </div>
-          )}
+          <ClienteSelector idPrefix="pedido" grupoClase="pedido-form-group" clientes={clientes}
+            clienteId={clienteId} onClienteId={cambiar(setClienteId)} nuevoCliente={nuevoCliente} onNuevoCliente={cambiar(setNuevoCliente)} />
 
           <div className="pedido-productos-header">
             <h3>Productos del pedido</h3>

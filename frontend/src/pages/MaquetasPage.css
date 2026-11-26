@@ -232,3 +232,72 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Integración con la API: filtros, reintento y avisos de entrega */
+
+.maquetas-filtros {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.maquetas-filtros .maquetas-busqueda {
+  margin: 0;
+}
+
+.maquetas-estado-filtro {
+  width: auto;
+  min-width: 170px;
+  background: #fffdf9;
+}
+
+.maquetas-reintentar {
+  margin-left: 10px;
+  padding: 6px 12px;
+}
+
+.maquetas-btn-nuevo:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.maqueta-alerta {
+  display: inline-block;
+  margin: 6px 0 0;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.maquetas-table .maqueta-alerta {
+  display: table;
+}
+
+.maqueta-alerta-pronto {
+  background: #fff0d8;
+  color: #bd7134;
+}
+
+.maqueta-alerta-atrasada {
+  background: #fde4e1;
+  color: #a8322b;
+}
+
+@media (max-width: 600px) {
+  .maquetas-filtros,
+  .maquetas-filtros .maquetas-busqueda {
+    width: 100%;
+  }
+}
+
+/* La tabla cabe en una pantalla de 1280 px sin barra horizontal; el código no se parte en dos líneas */
+.maquetas-table {
+  min-width: 780px;
+}
+
+.maqueta-codigo {
+  white-space: nowrap;
+}

@@ -237,18 +237,6 @@
   background: #fffdf9;
 }
 
-.pedido-cliente-nuevo {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 12px;
-  padding: 15px 15px 0;
-  margin-bottom: 18px;
-  background: #fff8e9;
-  border: 1px dashed #f1d9a3;
-  border-radius: 10px;
-  animation: ep-fade-down 0.3s ease backwards;
-}
-
 .pedido-total small {
   color: #8490a0;
   font-size: 11px;
@@ -272,8 +260,3 @@
   cursor: not-allowed;
 }
 
-@media (max-width: 600px) {
-  .pedido-cliente-nuevo {
-    grid-template-columns: 1fr;
-  }
-}
